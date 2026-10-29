@@ -134,15 +134,123 @@
             </div>
           </div>
 
-          <!-- 5-Segment Health Meter -->
+          <!-- Player Health Meter (Retro Arcade Cherries) -->
           <div class="health-meter">
-            <span class="stat-label">CORE INTEGRITY</span>
-            <div class="health-segments">
-              <div class="health-segment active" data-seg="1"></div>
-              <div class="health-segment active" data-seg="2"></div>
-              <div class="health-segment active" data-seg="3"></div>
-              <div class="health-segment active" data-seg="4"></div>
-              <div class="health-segment active" data-seg="5"></div>
+            <div class="health-header">
+              <span class="stat-label">PLAYER HEALTH</span>
+              <span id="hud-health-val" class="health-percent-val">100%</span>
+            </div>
+            <div class="health-segments health-cherries">
+              <div class="health-segment health-cherry active" data-seg="1" title="Cherry 1 (20% HP)">
+                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
+                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
+                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
+                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
+                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
+                </svg>
+              </div>
+              <div class="health-segment health-cherry active" data-seg="2" title="Cherry 2 (40% HP)">
+                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
+                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
+                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
+                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
+                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
+                </svg>
+              </div>
+              <div class="health-segment health-cherry active" data-seg="3" title="Cherry 3 (60% HP)">
+                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
+                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
+                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
+                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
+                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
+                </svg>
+              </div>
+              <div class="health-segment health-cherry active" data-seg="4" title="Cherry 4 (80% HP)">
+                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
+                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
+                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
+                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
+                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
+                </svg>
+              </div>
+              <div class="health-segment health-cherry active" data-seg="5" title="Cherry 5 (100% HP)">
+                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
+                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
+                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
+                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
+                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
+                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
+                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
+                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
+                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
+                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
+                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
+                </svg>
+              </div>
             </div>
           </div>
 

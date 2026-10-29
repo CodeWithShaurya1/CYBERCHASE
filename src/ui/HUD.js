@@ -16,7 +16,9 @@ export class HUD {
     this.btnPause = document.getElementById('btn-hud-pause');
     this.btnMute = document.getElementById('btn-hud-mute');
     this.btnFullscreen = document.getElementById('btn-hud-fullscreen');
-    this.healthSegments = document.querySelectorAll('.health-segment');
+    this.healthValEl = document.getElementById('hud-health-val');
+    this.healthSegments = document.querySelectorAll('.health-cherry, .health-segment');
+    this.previousHealthPercent = 100;
 
     this.displayedScore = 0;
     this.targetScore = 0;
@@ -108,18 +110,41 @@ export class HUD {
   }
 
   updateHealth(healthPercent, isDamage = false) {
-    // 5 segments: 100%, 80%, 60%, 40%, 20%, 0%
-    const activeSegmentsCount = Math.max(0, Math.min(5, Math.round(healthPercent / 20)));
+    const clampedHealth = Math.max(0, Math.min(100, Math.round(healthPercent)));
+    // 5 cherries: 100%, 80%, 60%, 40%, 20%, 0%
+    const activeCherriesCount = Math.max(0, Math.min(5, Math.round(clampedHealth / 20)));
 
-    this.healthSegments.forEach((seg, idx) => {
-      if (idx < activeSegmentsCount) {
-        seg.classList.add('active');
-        seg.classList.remove('depleted');
-        seg.classList.remove('danger');
+    // Update numerical percentage text immediately
+    if (this.healthValEl) {
+      this.healthValEl.textContent = `${clampedHealth}%`;
+      if (clampedHealth <= 40) {
+        this.healthValEl.classList.add('low');
       } else {
-        seg.classList.remove('active');
-        seg.classList.add('depleted');
-        seg.classList.remove('danger');
+        this.healthValEl.classList.remove('low');
+      }
+    }
+
+    const cherries = (this.healthSegments && this.healthSegments.length > 0)
+      ? this.healthSegments
+      : document.querySelectorAll('.health-cherry, .health-segment');
+
+    cherries.forEach((cherry, idx) => {
+      if (idx < activeCherriesCount) {
+        cherry.classList.add('active');
+        cherry.classList.remove('depleted');
+        cherry.classList.remove('bursting');
+      } else {
+        const wasActive = cherry.classList.contains('active');
+        cherry.classList.remove('active');
+        cherry.classList.add('depleted');
+
+        // Animate the lost cherry breaking / bursting on damage
+        if (isDamage && wasActive && idx === activeCherriesCount) {
+          cherry.classList.add('bursting');
+          setTimeout(() => {
+            cherry.classList.remove('bursting');
+          }, 450);
+        }
       }
     });
 
@@ -135,6 +160,8 @@ export class HUD {
         setTimeout(() => healthMeter.classList.remove('damage-flash'), 350);
       }
     }
+
+    this.previousHealthPercent = clampedHealth;
   }
 
   updateSpeed(multiplier) {

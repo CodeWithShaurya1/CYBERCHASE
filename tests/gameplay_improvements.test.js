@@ -295,40 +295,57 @@ function createMockScene() {
     { classList: createMockClassList() }
   ];
 
+  const mockHealthVal = {
+    textContent: '100%',
+    classList: createMockClassList()
+  };
+
   const hudInstance = {
     healthSegments: mockSegments,
+    healthValEl: mockHealthVal,
     updateHealth: HUD.prototype.updateHealth
   };
 
-  // 100%: 5 active, 0 depleted
-  hudInstance.updateHealth(100);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 5, '100%: 5 segments active');
-  assert(mockSegments.filter(s => s.classList.contains('depleted')).length === 0, '100%: 0 segments depleted');
+  // 100%: 5 cherries active, 0 depleted, text 100%
+  hudInstance.updateHealth(100, false);
+  assert(mockSegments.filter(s => s.classList.contains('active')).length === 5, '100%: 5 cherries active');
+  assert(mockSegments.filter(s => s.classList.contains('depleted')).length === 0, '100%: 0 cherries depleted');
+  assert(mockHealthVal.textContent === '100%', `Expected text 100%, got ${mockHealthVal.textContent}`);
+  assert(!mockHealthVal.classList.contains('low'), '100% should not have low class');
 
-  // 80%: 4 active, 1 depleted
-  hudInstance.updateHealth(80);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 4, '80%: 4 segments active');
-  assert(mockSegments[4].classList.contains('depleted'), '80%: 5th segment marked depleted');
+  // 80%: 4 active, 1 depleted, text 80%, damage animation triggered on 5th cherry
+  hudInstance.updateHealth(80, true);
+  assert(mockSegments.filter(s => s.classList.contains('active')).length === 4, '80%: 4 cherries active');
+  assert(mockSegments[4].classList.contains('depleted'), '80%: 5th cherry marked depleted');
+  assert(mockHealthVal.textContent === '80%', `Expected text 80%, got ${mockHealthVal.textContent}`);
+  assert(!mockHealthVal.classList.contains('low'), '80% should not have low class');
 
-  // 60%: 3 active, 2 depleted
-  hudInstance.updateHealth(60);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 3, '60%: 3 segments active');
-  assert(mockSegments[3].classList.contains('depleted') && mockSegments[4].classList.contains('depleted'), '60%: segments 4 & 5 depleted');
+  // 60%: 3 active, 2 depleted, text 60%
+  hudInstance.updateHealth(60, true);
+  assert(mockSegments.filter(s => s.classList.contains('active')).length === 3, '60%: 3 cherries active');
+  assert(mockSegments[3].classList.contains('depleted') && mockSegments[4].classList.contains('depleted'), '60%: cherries 4 & 5 depleted');
+  assert(mockHealthVal.textContent === '60%', `Expected text 60%, got ${mockHealthVal.textContent}`);
 
-  // 40%: 2 active, 3 depleted
-  hudInstance.updateHealth(40);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 2, '40%: 2 segments active');
+  // 40%: 2 active, 3 depleted, text 40%, low health warning activated
+  hudInstance.updateHealth(40, true);
+  assert(mockSegments.filter(s => s.classList.contains('active')).length === 2, '40%: 2 cherries active');
+  assert(mockHealthVal.textContent === '40%', `Expected text 40%, got ${mockHealthVal.textContent}`);
+  assert(mockHealthVal.classList.contains('low'), '40% must activate low health pulsating class');
 
-  // 20%: 1 active, 4 depleted
-  hudInstance.updateHealth(20);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 1, '20%: 1 segment active');
+  // 20%: 1 active, 4 depleted, text 20%
+  hudInstance.updateHealth(20, true);
+  assert(mockSegments.filter(s => s.classList.contains('active')).length === 1, '20%: 1 cherry active');
+  assert(mockHealthVal.textContent === '20%', `Expected text 20%, got ${mockHealthVal.textContent}`);
+  assert(mockHealthVal.classList.contains('low'), '20% must retain low health class');
 
-  // 0%: 0 active, 5 depleted
-  hudInstance.updateHealth(0);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 0, '0%: 0 segments active');
-  assert(mockSegments.filter(s => s.classList.contains('depleted')).length === 5, '0%: 5 segments depleted');
+  // 0%: 0 active, 5 depleted, text 0%
+  hudInstance.updateHealth(0, true);
+  assert(mockSegments.filter(s => s.classList.contains('active')).length === 0, '0%: 0 cherries active');
+  assert(mockSegments.filter(s => s.classList.contains('depleted')).length === 5, '0%: 5 cherries depleted');
+  assert(mockHealthVal.textContent === '0%', `Expected text 0%, got ${mockHealthVal.textContent}`);
+  assert(mockHealthVal.classList.contains('low'), '0% must retain low health class');
 
-  pass(6, 'Health bar segments accurately transition from glowing active to depleted for each 20% step');
+  pass(6, 'Health bar cherries and percentage display (100% -> 0%) accurately reflect all 6 health states with bursting animations');
 }
 
 // ------------------------------------------------------------------------------
