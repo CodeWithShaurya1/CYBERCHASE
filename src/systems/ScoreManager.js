@@ -186,8 +186,8 @@ export class ScoreManager {
       return { damageBlocked: true, newHealth: this.health, isDead: false };
     }
 
-    // Enemy collision causes 10 HP controlled damage
-    this.health = Math.max(0, this.health - 10);
+    // Enemy collision causes 20% (20 HP) damage
+    this.health = Math.max(0, this.health - 20);
     this.onHealthChanged(this.health, true);
 
     return {

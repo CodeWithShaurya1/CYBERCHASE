@@ -184,8 +184,15 @@ class CyberchaseApp {
           }
         },
         onEnemyCollision: () => {
+          if (!this.isGameActive || this.scoreManager.health <= 0) return;
           audioManager.playWrong();
-          this.scoreManager.handleEnemyCollision();
+          const result = this.scoreManager.handleEnemyCollision();
+          if (this.scoreManager.health <= 0 || (result && result.isDead)) {
+            if (this.questionPanel) {
+              this.questionPanel.cancelCountdown();
+            }
+            this.endGameRun(false);
+          }
         },
         onObstacleSpawned: () => {
           // Obstacle activated in maze
@@ -386,6 +393,7 @@ class CyberchaseApp {
 
     // Start Phaser Run
     if (this.gameScene) {
+      this.gameScene.setTimeRemaining(this.sessionRemaining, this.sessionDuration);
       this.gameScene.startRun();
     }
 
@@ -400,6 +408,9 @@ class CyberchaseApp {
       this.sessionRemaining -= 1;
       if (this.hud) {
         this.hud.updateTime(this.sessionRemaining);
+      }
+      if (this.gameScene) {
+        this.gameScene.setTimeRemaining(this.sessionRemaining, this.sessionDuration);
       }
 
       // Progression: at 60s remaining, spawn 2nd enemy drone

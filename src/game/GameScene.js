@@ -22,6 +22,8 @@ export class GameScene extends Phaser.Scene {
     this.invulnerabilityTimer = 0;
     this.isRunActive = false;
     this.isScenePaused = false;
+    this.timeRemaining = 120;
+    this.totalDuration = 120;
 
     // External event hooks connected by UI
     this.externalCallbacks = {};
@@ -29,6 +31,27 @@ export class GameScene extends Phaser.Scene {
 
   setCallbacks(callbacks) {
     this.externalCallbacks = callbacks;
+  }
+
+  setTimeRemaining(remaining, total = 120) {
+    this.timeRemaining = Math.max(0, remaining);
+    this.totalDuration = total || 120;
+  }
+
+  getValidSpawnPosition(preferredR, preferredC, excludedPositions = []) {
+    if (
+      this.maze.isWalkable(preferredR, preferredC) &&
+      !excludedPositions.some(p => p.r === preferredR && p.c === preferredC)
+    ) {
+      return { r: preferredR, c: preferredC };
+    }
+    const nearest = this.maze.findNearestTarget(preferredR, preferredC, (r, c) => {
+      return (
+        this.maze.isWalkable(r, c) &&
+        !excludedPositions.some(p => p.r === r && p.c === c)
+      );
+    });
+    return nearest || { r: preferredR, c: preferredC };
   }
 
   create() {
@@ -76,7 +99,11 @@ export class GameScene extends Phaser.Scene {
     for (let r = 1; r < this.maze.rows - 1; r++) {
       for (let c = 1; c < this.maze.cols - 1; c++) {
         // Exclude player start and enemy spawns
-        if (this.maze.isWalkable(r, c) && !(r === 1 && c === 1) && !(r === 7 && c === 10)) {
+        const isExcluded = (r === 1 && c === 1) ||
+                           (r === 7 && c === 10) ||
+                           (r === 1 && c === 19) ||
+                           (r === 13 && c === 19);
+        if (this.maze.isWalkable(r, c) && !isExcluded) {
           validCorridors.push({ r, c });
         }
       }
@@ -130,15 +157,26 @@ export class GameScene extends Phaser.Scene {
     this.enemies.forEach(e => e.destroy());
     this.enemies = [];
 
-    // Enemy 1: Spawns in central intersection (7, 10)
-    const e1 = new Enemy(this, this.maze, 7, 10, 1);
-    this.enemies.push(e1);
+    // 3 enemies present from the very beginning at separate valid positions
+    const spawnCandidates = [
+      { r: 7, c: 10, role: 'hunter' },       // Central intersection
+      { r: 1, c: 19, role: 'interceptor' },  // Top-right corridor
+      { r: 13, c: 19, role: 'flanker' }      // Bottom-right corridor
+    ];
+
+    const occupied = [{ r: 1, c: 1 }]; // Exclude player start position
+
+    spawnCandidates.forEach((candidate, idx) => {
+      const pos = this.getValidSpawnPosition(candidate.r, candidate.c, occupied);
+      occupied.push(pos);
+      const enemy = new Enemy(this, this.maze, pos.r, pos.c, idx + 1, candidate.role);
+      this.enemies.push(enemy);
+    });
   }
 
   addSecondEnemy() {
-    if (this.enemies.length >= 2) return;
-    const e2 = new Enemy(this, this.maze, 13, 19, 2);
-    this.enemies.push(e2);
+    // 3 enemies are already active from start; maintain safe no-op
+    if (this.enemies.length >= 3) return;
   }
 
   startRun() {
@@ -146,6 +184,8 @@ export class GameScene extends Phaser.Scene {
     this.isScenePaused = false;
     this.invulnerabilityTimer = 0;
     this.powerupTimer = 0;
+    this.timeRemaining = 120;
+    this.totalDuration = 120;
 
     this.obstacleManager.reset();
     this.maze.renderWalls();
@@ -263,12 +303,15 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
+    // Smooth progress calculation from timeRemaining (0.0 to 1.0)
+    const progress = Math.min(1.0, Math.max(0.0, 1 - (this.timeRemaining / this.totalDuration)));
+
     // Update Player automatic navigation
     this.player.update(delta, this.collectibles, this.powerups, this.obstacleManager.activeObstacles);
 
-    // Update Enemies
+    // Update Enemies with dynamic pursuit scaling
     this.enemies.forEach(enemy => {
-      enemy.update(delta, this.player.r, this.player.c);
+      enemy.update(delta, this.player.r, this.player.c, this.player.heading, progress, this.enemies);
     });
 
     // Check Player collisions with Collectibles
@@ -357,9 +400,9 @@ export class GameScene extends Phaser.Scene {
 
     for (const enemy of this.enemies) {
       const dist = Math.hypot(this.player.x - enemy.x, this.player.y - enemy.y);
-      if (dist < 16) {
-        // Set 2.0s invulnerability i-frames to prevent frame spam
-        this.invulnerabilityTimer = 2000;
+      if (dist < 18) {
+        // Set 1.5s invulnerability cooldown to prevent multiple hits from one collision
+        this.invulnerabilityTimer = 1500;
         this.particleEffects.emitDamageGlitch(this.player.x, this.player.y);
 
         // Flash player to indicate invulnerability
@@ -368,16 +411,18 @@ export class GameScene extends Phaser.Scene {
           alpha: 0.3,
           duration: 150,
           yoyo: true,
-          repeat: 5,
+          repeat: 4,
           onComplete: () => {
-            this.player.container.setAlpha(1);
+            if (this.player && this.player.container) {
+              this.player.container.setAlpha(1);
+            }
           }
         });
 
         if (this.externalCallbacks.onEnemyCollision) {
           this.externalCallbacks.onEnemyCollision();
         }
-        break;
+        break; // Prevent multiple enemy collisions in the same frame
       }
     }
   }

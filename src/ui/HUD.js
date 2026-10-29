@@ -108,19 +108,17 @@ export class HUD {
   }
 
   updateHealth(healthPercent, isDamage = false) {
-    // 5 segments: 100, 80, 60, 40, 20, 0
-    const activeSegmentsCount = Math.ceil(healthPercent / 20);
+    // 5 segments: 100%, 80%, 60%, 40%, 20%, 0%
+    const activeSegmentsCount = Math.max(0, Math.min(5, Math.round(healthPercent / 20)));
 
     this.healthSegments.forEach((seg, idx) => {
       if (idx < activeSegmentsCount) {
         seg.classList.add('active');
-        if (healthPercent <= 40) {
-          seg.classList.add('danger');
-        } else {
-          seg.classList.remove('danger');
-        }
+        seg.classList.remove('depleted');
+        seg.classList.remove('danger');
       } else {
         seg.classList.remove('active');
+        seg.classList.add('depleted');
         seg.classList.remove('danger');
       }
     });
@@ -130,6 +128,11 @@ export class HUD {
       if (hudBar) {
         hudBar.classList.add('glitch-shake');
         setTimeout(() => hudBar.classList.remove('glitch-shake'), 350);
+      }
+      const healthMeter = document.querySelector('.health-meter');
+      if (healthMeter) {
+        healthMeter.classList.add('damage-flash');
+        setTimeout(() => healthMeter.classList.remove('damage-flash'), 350);
       }
     }
   }
