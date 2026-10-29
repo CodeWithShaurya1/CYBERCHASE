@@ -417,8 +417,24 @@ export class GameScene extends Phaser.Scene {
   }
 
   checkEnemyCollisions() {
-    // Enemies maintain minimum safe distance during active questions and never physically touch the player.
-    // Health damage is evaluated strictly at question timeout via proximity detection.
+    if (!this.player || !this.enemies || this.invulnerabilityTimer > 0) return;
+
+    for (const enemy of this.enemies) {
+      const dist = Math.hypot(this.player.x - enemy.x, this.player.y - enemy.y);
+      if (dist < 22) {
+        this.invulnerabilityTimer = 1500; // 1.5s invulnerability cooldown
+        if (this.cameras && this.cameras.main) {
+          this.cameras.main.shake(250, 0.015);
+        }
+        if (this.particleEffects) {
+          this.particleEffects.emitDamageGlitch(this.player.x, this.player.y);
+        }
+        if (this.externalCallbacks.onEnemyCollision) {
+          this.externalCallbacks.onEnemyCollision();
+        }
+        break;
+      }
+    }
   }
 
   shuffle(arr) {

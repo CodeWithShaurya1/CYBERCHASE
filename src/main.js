@@ -184,8 +184,18 @@ class CyberchaseApp {
           }
         },
         onEnemyCollision: () => {
-          // While question countdown is running, player is protected from damage.
-          // Health decreases only on question timeout with enemy in proximity.
+          if (!this.isGameActive || this.isPaused) return;
+          audioManager.playDamage();
+          const res = this.scoreManager.handleEnemyCollision();
+          if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
+            this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+          }
+          if (res && (res.isDead || this.scoreManager.health <= 0)) {
+            if (this.questionPanel) {
+              this.questionPanel.cancelCountdown();
+            }
+            this.endGameRun(false);
+          }
         },
         onObstacleSpawned: () => {
           // Obstacle activated in maze
@@ -322,26 +332,16 @@ class CyberchaseApp {
         this.gameScene.player.triggerBoostEffect();
       }
     } else {
+      audioManager.playWrong();
+      // Apply 20% health reduction on mistake (wrong answer or timeout)
       if (result.isTimeout) {
-        // At the exact moment the question timer reaches zero:
-        // Check distance to all 3 enemies against the defined danger radius
-        const isEnemyNearby = this.gameScene ? this.gameScene.isAnyEnemyInDangerRadius(75) : false;
-
-        if (isEnemyNearby) {
-          // At least one enemy inside danger radius: reduce health by exactly 20%
-          audioManager.playWrong();
-          this.scoreManager.handleTimeoutWithDamage(qId);
-          if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
-            this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
-          }
-        } else {
-          // Every enemy outside danger radius: do NOT reduce health
-          this.scoreManager.handleTimeoutNoDamage(qId);
-        }
+        this.scoreManager.handleTimeoutWithDamage(qId);
       } else {
-        // Player answered early: protected from damage! No health loss
-        audioManager.playWrong();
-        this.scoreManager.handleWrongAnswerEarly(qId);
+        this.scoreManager.handleMistake(false, qId, true);
+      }
+
+      if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
+        this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
       }
     }
 
