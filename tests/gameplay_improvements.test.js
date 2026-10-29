@@ -21,6 +21,12 @@ if (typeof globalThis.window === 'undefined') {
 }
 if (typeof globalThis.document === 'undefined') {
   globalThis.document = {
+    createElement: (tag) => ({
+      tagName: tag,
+      className: '',
+      textContent: '',
+      remove: () => {}
+    }),
     getElementById: () => ({ addEventListener: () => {}, textContent: '', classList: { add: () => {}, remove: () => {} } }),
     querySelectorAll: () => [],
     querySelector: () => null
@@ -300,52 +306,77 @@ function createMockScene() {
     classList: createMockClassList()
   };
 
+  const mockHealthFill = {
+    style: { width: '100%' },
+    classList: createMockClassList()
+  };
+
+  const mockCheckpoints = [20, 40, 60, 80].map(val => ({
+    getAttribute: (attr) => attr === 'data-val' ? String(val) : null,
+    classList: createMockClassList()
+  }));
+
+  const mockTicks = [0, 20, 40, 60, 80, 100].map(val => ({
+    getAttribute: (attr) => attr === 'data-val' ? String(val) : null,
+    classList: createMockClassList()
+  }));
+
+  const popups = [];
+  const mockFloaterContainer = {
+    appendChild: (el) => { popups.push(el); }
+  };
+
   const hudInstance = {
-    healthSegments: mockSegments,
     healthValEl: mockHealthVal,
+    healthBarFill: mockHealthFill,
+    healthCheckpoints: mockCheckpoints,
+    healthTicks: mockTicks,
+    healthFloaterContainer: mockFloaterContainer,
     updateHealth: HUD.prototype.updateHealth
   };
 
-  // 100%: 5 cherries active, 0 depleted, text 100%
+  // 100%: Full bar fill 100%, text 100%, all checkpoints active
   hudInstance.updateHealth(100, false);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 5, '100%: 5 cherries active');
-  assert(mockSegments.filter(s => s.classList.contains('depleted')).length === 0, '100%: 0 cherries depleted');
+  assert(mockHealthFill.style.width === '100%', `Expected fill 100%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '100%', `Expected text 100%, got ${mockHealthVal.textContent}`);
-  assert(!mockHealthVal.classList.contains('low'), '100% should not have low class');
+  assert(!mockHealthVal.classList.contains('low'), '100% should not be low health');
+  assert(!mockHealthFill.classList.contains('danger'), '100% fill should not be danger');
+  assert(mockCheckpoints.filter(cp => cp.classList.contains('active')).length === 4, 'All checkpoints active at 100%');
 
-  // 80%: 4 active, 1 depleted, text 80%, damage animation triggered on 5th cherry
+  // 80%: Fill 80%, text 80%, floating -20% text created, 80% checkpoint highlighted
   hudInstance.updateHealth(80, true);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 4, '80%: 4 cherries active');
-  assert(mockSegments[4].classList.contains('depleted'), '80%: 5th cherry marked depleted');
+  assert(mockHealthFill.style.width === '80%', `Expected fill 80%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '80%', `Expected text 80%, got ${mockHealthVal.textContent}`);
-  assert(!mockHealthVal.classList.contains('low'), '80% should not have low class');
+  assert(popups.length > 0 && popups[popups.length - 1].textContent === '−20% HEALTH', 'Floating -20% HEALTH message created');
+  assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '80').classList.contains('highlight-pulse'), '80% checkpoint highlighted on hit');
 
-  // 60%: 3 active, 2 depleted, text 60%
+  // 60%: Fill 60%, text 60%, checkpoint 80 depleted, 60 checkpoint highlighted
   hudInstance.updateHealth(60, true);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 3, '60%: 3 cherries active');
-  assert(mockSegments[3].classList.contains('depleted') && mockSegments[4].classList.contains('depleted'), '60%: cherries 4 & 5 depleted');
+  assert(mockHealthFill.style.width === '60%', `Expected fill 60%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '60%', `Expected text 60%, got ${mockHealthVal.textContent}`);
+  assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '80').classList.contains('depleted'), '80% checkpoint marked depleted');
+  assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '60').classList.contains('highlight-pulse'), '60% checkpoint highlighted');
 
-  // 40%: 2 active, 3 depleted, text 40%, low health warning activated
+  // 40%: Fill 40%, text 40%, danger and low classes activated
   hudInstance.updateHealth(40, true);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 2, '40%: 2 cherries active');
+  assert(mockHealthFill.style.width === '40%', `Expected fill 40%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '40%', `Expected text 40%, got ${mockHealthVal.textContent}`);
-  assert(mockHealthVal.classList.contains('low'), '40% must activate low health pulsating class');
+  assert(mockHealthVal.classList.contains('low'), '40% must activate low warning');
+  assert(mockHealthFill.classList.contains('danger'), '40% fill must activate danger color');
 
-  // 20%: 1 active, 4 depleted, text 20%
+  // 20%: Fill 20%, text 20%, checkpoint 20 highlighted
   hudInstance.updateHealth(20, true);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 1, '20%: 1 cherry active');
+  assert(mockHealthFill.style.width === '20%', `Expected fill 20%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '20%', `Expected text 20%, got ${mockHealthVal.textContent}`);
-  assert(mockHealthVal.classList.contains('low'), '20% must retain low health class');
+  assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '20').classList.contains('highlight-pulse'), '20% checkpoint highlighted');
 
-  // 0%: 0 active, 5 depleted, text 0%
+  // 0%: Fill 0%, text 0%, all checkpoints depleted
   hudInstance.updateHealth(0, true);
-  assert(mockSegments.filter(s => s.classList.contains('active')).length === 0, '0%: 0 cherries active');
-  assert(mockSegments.filter(s => s.classList.contains('depleted')).length === 5, '0%: 5 cherries depleted');
+  assert(mockHealthFill.style.width === '0%', `Expected fill 0%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '0%', `Expected text 0%, got ${mockHealthVal.textContent}`);
-  assert(mockHealthVal.classList.contains('low'), '0% must retain low health class');
+  assert(mockCheckpoints.filter(cp => cp.classList.contains('depleted')).length === 4, 'All checkpoints depleted at 0%');
 
-  pass(6, 'Health bar cherries and percentage display (100% -> 0%) accurately reflect all 6 health states with bursting animations');
+  pass(6, 'Segmented horizontal health bar, 20% intervals, fill shrinking, and floating -20% HEALTH verified for all 6 states');
 }
 
 // ------------------------------------------------------------------------------

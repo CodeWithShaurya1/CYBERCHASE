@@ -134,123 +134,35 @@
             </div>
           </div>
 
-          <!-- Player Health Meter (Retro Arcade Cherries) -->
-          <div class="health-meter">
+          <!-- Horizontal Segmented Player Health Bar -->
+          <div class="health-meter" id="health-meter">
             <div class="health-header">
               <span class="stat-label">PLAYER HEALTH</span>
-              <span id="hud-health-val" class="health-percent-val">100%</span>
+              <div id="hud-health-floater-container" class="health-floater-container"></div>
+              <span id="hud-health-val" class="stat-value health-percent-val">100%</span>
             </div>
-            <div class="health-segments health-cherries">
-              <div class="health-segment health-cherry active" data-seg="1" title="Cherry 1 (20% HP)">
-                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
-                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
-                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
-                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
-                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
-                </svg>
+            
+            <div class="health-bar-wrapper">
+              <div class="health-bar-track">
+                <div id="hud-health-fill" class="health-bar-fill" style="width: 100%;">
+                  <div class="health-fill-sheen"></div>
+                </div>
+                <!-- 20% Interval Checkpoint Markers -->
+                <div class="health-checkpoint" data-val="20" style="left: 20%;" title="20% Checkpoint"></div>
+                <div class="health-checkpoint" data-val="40" style="left: 40%;" title="40% Checkpoint"></div>
+                <div class="health-checkpoint" data-val="60" style="left: 60%;" title="60% Checkpoint"></div>
+                <div class="health-checkpoint" data-val="80" style="left: 80%;" title="80% Checkpoint"></div>
               </div>
-              <div class="health-segment health-cherry active" data-seg="2" title="Cherry 2 (40% HP)">
-                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
-                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
-                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
-                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
-                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
-                </svg>
-              </div>
-              <div class="health-segment health-cherry active" data-seg="3" title="Cherry 3 (60% HP)">
-                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
-                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
-                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
-                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
-                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
-                </svg>
-              </div>
-              <div class="health-segment health-cherry active" data-seg="4" title="Cherry 4 (80% HP)">
-                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
-                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
-                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
-                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
-                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
-                </svg>
-              </div>
-              <div class="health-segment health-cherry active" data-seg="5" title="Cherry 5 (100% HP)">
-                <svg class="cherry-svg" viewBox="0 0 16 16" width="22" height="22" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="9" y="0" width="3" height="2" fill="#39ff88"/>
-                  <rect x="10" y="0" width="1" height="1" fill="#ffffff"/>
-                  <path d="M8 1h3v1h-1v1H9v1H8v2H7v2H6v1H5v-1h1V7h1V5h1V3h1V2h-1V1H8z" fill="#00f5ff"/>
-                  <path d="M10 3h1v2h1v3h-1v1h-1v-1h1V8h-1V5h-1V3z" fill="#39ff88"/>
-                  <rect x="2" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="1" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="3" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="2" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="3" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="1" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="4" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="9" y="9" width="4" height="5" fill="#ff1744"/>
-                  <rect x="8" y="10" width="6" height="3" fill="#ff1744"/>
-                  <rect x="10" y="8" width="2" height="7" fill="#ff1744"/>
-                  <rect x="9" y="10" width="1" height="1" fill="#ffffff"/>
-                  <rect x="10" y="10" width="1" height="2" fill="#ff80ab"/>
-                  <rect x="8" y="13" width="2" height="1" fill="#990022"/>
-                  <rect x="11" y="13" width="2" height="1" fill="#990022"/>
-                </svg>
-              </div>
+            </div>
+
+            <!-- Subtle Ticks & Percentage Labels below the bar -->
+            <div class="health-bar-ticks">
+              <span class="health-tick" data-val="0">0%</span>
+              <span class="health-tick active" data-val="20">20</span>
+              <span class="health-tick active" data-val="40">40</span>
+              <span class="health-tick active" data-val="60">60</span>
+              <span class="health-tick active" data-val="80">80</span>
+              <span class="health-tick active" data-val="100">100%</span>
             </div>
           </div>
 
