@@ -171,6 +171,28 @@ class AudioManager {
     } catch (_) {}
   }
 
+  // Damage collision sound: impactful cyber bass drop & harsh glitch crunch
+  playDamage() {
+    this.ensureContext();
+    if (this.isMuted || !this.ctx) return;
+    try {
+      const now = this.ctx.currentTime;
+      [120, 160].forEach((freq) => {
+        const osc = this.ctx.createOscillator();
+        const gain = this.ctx.createGain();
+        osc.type = 'sawtooth';
+        osc.frequency.setValueAtTime(freq, now);
+        osc.frequency.exponentialRampToValueAtTime(40, now + 0.25);
+        gain.gain.setValueAtTime(0.2, now);
+        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.25);
+        osc.connect(gain);
+        gain.connect(this.masterGain);
+        osc.start(now);
+        osc.stop(now + 0.26);
+      });
+    } catch (_) {}
+  }
+
   // Data Fragment collection: Sparkling retro neon blip
   playCollect() {
     if (this.isMuted || !this.ctx) return;

@@ -198,11 +198,23 @@ class CyberchaseApp {
         },
         onEnemyCollision: () => {
           if (!this.isGameActive || this.isPaused) return;
-          audioManager.playDamage();
-          const res = this.scoreManager.handleEnemyCollision();
-          if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
-            this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+          try {
+            audioManager.playDamage();
+          } catch (_) {}
+
+          let res = null;
+          try {
+            res = this.scoreManager.handleEnemyCollision();
+          } catch (e) {
+            console.error('Error handling enemy collision in scoreManager:', e);
           }
+
+          try {
+            if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
+              this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+            }
+          } catch (_) {}
+
           if (res && (res.isDead || this.scoreManager.health <= 0)) {
             if (this.questionPanel) {
               this.questionPanel.cancelCountdown();

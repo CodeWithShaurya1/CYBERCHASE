@@ -193,7 +193,20 @@ export class GameScene extends Phaser.Scene {
       }
     }
 
-    if (validTiles.length === 0) return null;
+    if (validTiles.length === 0) {
+      for (let r = 1; r < this.maze.rows - 1; r++) {
+        for (let c = 1; c < this.maze.cols - 1; c++) {
+          if (this.maze.isWalkable(r, c) && (r !== this.player.r || c !== this.player.c)) {
+            const dist = Math.hypot(r - this.player.r, c - this.player.c);
+            validTiles.push({ r, c, dist });
+          }
+        }
+      }
+    }
+
+    if (validTiles.length === 0) {
+      validTiles.push({ r: 7, c: 10, dist: 5 });
+    }
 
     // Pick one of the farthest walkable tiles from player
     validTiles.sort((a, b) => b.dist - a.dist);

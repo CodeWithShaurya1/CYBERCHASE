@@ -203,13 +203,39 @@ export class Player {
       // Ensure step is still walkable (could have been blocked by a new dynamic obstacle)
       if (this.maze.isWalkable(step.r, step.c)) {
         this.nextTile = step;
+        return;
       } else {
         // Obstacle blocked current route, recalculate immediately!
         this.currentPath = [];
         this.planPathToTarget(collectibles, powerups);
         if (this.currentPath && this.currentPath.length > 0) {
-          this.nextTile = this.currentPath.shift();
+          const retryStep = this.currentPath.shift();
+          if (this.maze.isWalkable(retryStep.r, retryStep.c)) {
+            this.nextTile = retryStep;
+            return;
+          }
         }
+      }
+    }
+
+    // Safety fallback: if target is unreachable or path is empty, continue roaming open corridor
+    const dirs = [
+      { r: Math.round(this.heading.y) || 0, c: Math.round(this.heading.x) || 0 }, // straight
+      { r: 0, c: 1 }, { r: 1, c: 0 }, { r: 0, c: -1 }, { r: -1, c: 0 }
+    ];
+
+    for (const d of dirs) {
+      if (d.r === 0 && d.c === 0) continue;
+      const nr = this.r + d.r;
+      let nc = this.c + d.c;
+      if (nr === 7) {
+        if (nc < 0) nc = this.maze.cols - 1;
+        else if (nc >= this.maze.cols) nc = 0;
+      }
+      if (this.maze.isWalkable(nr, nc)) {
+        this.nextTile = { r: nr, c: nc };
+        this.currentPath = [];
+        return;
       }
     }
   }
