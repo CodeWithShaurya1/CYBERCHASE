@@ -5,6 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>CYBERCHASE — Survive the Code | CSI TechVerse</title>
     <meta name="description" content="CYBERCHASE: A fast-paced cyberpunk arcade programming survival challenge built for CSI TechVerse. Survive the rogue AI neon maze through code mastery." />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;700&family=Orbitron:wght@500;700;900&family=Rajdhani:wght@600;700&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="/src/styles/main.css" />
   </head>
   <body>
@@ -16,61 +19,90 @@
     <div id="app">
       <!-- ================= 0. PLAYER REGISTRATION SCREEN (ENTRY POINT) ================= -->
       <section id="screen-registration" class="screen">
-        <div class="registration-card">
-          <div class="brand-badge">
-            <span class="pulse-dot"></span>
-            CSI TECHVERSE // PLAYER ONBOARDING
+        <div class="reg-container">
+          <!-- Left Column: Bold Asymmetric Branding & Title -->
+          <div class="reg-hero">
+            <div class="reg-brand-badge">
+              <span class="reg-pulse-dot"></span>
+              <span>CSI TECHVERSE // PLAYER ONBOARDING</span>
+            </div>
+
+            <h1 class="reg-title">
+              PLAYER REGISTRATION
+              <span class="reg-title-accent">// TECHVERSE</span>
+            </h1>
+
+            <p class="reg-subtitle">
+              AUTHENTICATE CREDENTIALS TO ENTER THE SYSTEM
+            </p>
+
+            <div class="reg-terminal-meta">
+              <div class="reg-meta-chip">
+                <span class="meta-label">TERMINAL:</span>
+                <span class="meta-value">TECHVERSE_NODE_01</span>
+              </div>
+              <div class="reg-meta-chip">
+                <span class="meta-label">SYSTEM STATUS:</span>
+                <span class="meta-value meta-status-ready">READY</span>
+              </div>
+            </div>
           </div>
-          <h1 class="reg-title">PLAYER REGISTRATION // TECHVERSE</h1>
-          <p class="reg-subtitle">AUTHENTICATE CREDENTIALS TO ENTER THE SYSTEM</p>
 
-          <form id="form-registration" class="reg-form" novalidate>
-            <!-- Field 1: Full Name -->
-            <div class="form-group">
-              <label for="reg-input-name" class="form-label">
-                <span class="label-prefix">[01]</span> FULL NAME <span class="required-star">*</span>
-              </label>
-              <input
-                type="text"
-                id="reg-input-name"
-                class="input-cyber input-reg"
-                placeholder="ENTER YOUR FULL NAME"
-                maxlength="40"
-                autocomplete="off"
-                style="text-transform: uppercase;"
-                required
-              />
-              <span id="reg-error-name" class="input-error-msg"></span>
+          <!-- Right Column: Minimalist Elegant Form -->
+          <div class="reg-form-col">
+            <form id="form-registration" class="reg-form" novalidate>
+              <!-- Field 1: Full Name -->
+              <div class="form-group reg-form-group">
+                <label for="reg-input-name" class="form-label reg-label">
+                  <span class="label-prefix">[01]</span> FULL NAME <span class="required-star">*</span>
+                </label>
+                <div class="reg-input-shell">
+                  <input
+                    type="text"
+                    id="reg-input-name"
+                    class="input-cyber input-reg"
+                    placeholder="ENTER YOUR FULL NAME"
+                    maxlength="40"
+                    autocomplete="off"
+                    style="text-transform: uppercase;"
+                    required
+                  />
+                </div>
+                <span id="reg-error-name" class="input-error-msg"></span>
+              </div>
+
+              <!-- Field 2: Enrollment Number -->
+              <div class="form-group reg-form-group">
+                <label for="reg-input-enrollment" class="form-label reg-label">
+                  <span class="label-prefix">[02]</span> ENROLLMENT NUMBER <span class="required-star">*</span>
+                </label>
+                <div class="reg-input-shell">
+                  <input
+                    type="text"
+                    id="reg-input-enrollment"
+                    class="input-cyber input-reg"
+                    placeholder="ENTER YOUR ENROLLMENT NUMBER"
+                    maxlength="40"
+                    autocomplete="off"
+                    style="text-transform: uppercase;"
+                    required
+                  />
+                </div>
+                <span id="reg-error-enrollment" class="input-error-msg"></span>
+              </div>
+
+              <div id="reg-error-global" class="global-error-msg"></div>
+
+              <button type="submit" id="reg-btn-continue" class="btn-cyber btn-primary-run btn-reg-submit">
+                <span class="btn-text">CONTINUE TO GAME</span>
+                <span class="btn-arrow" aria-hidden="true">→</span>
+              </button>
+            </form>
+
+            <div class="reg-footer-meta">
+              <span>TERMINAL: TECHVERSE_NODE_01</span>
+              <span>SYSTEM STATUS: READY</span>
             </div>
-
-            <!-- Field 2: Enrollment Number -->
-            <div class="form-group">
-              <label for="reg-input-enrollment" class="form-label">
-                <span class="label-prefix">[02]</span> ENROLLMENT NUMBER <span class="required-star">*</span>
-              </label>
-              <input
-                type="text"
-                id="reg-input-enrollment"
-                class="input-cyber input-reg"
-                placeholder="ENTER YOUR ENROLLMENT NUMBER"
-                maxlength="40"
-                autocomplete="off"
-                style="text-transform: uppercase;"
-                required
-              />
-              <span id="reg-error-enrollment" class="input-error-msg"></span>
-            </div>
-
-            <div id="reg-error-global" class="global-error-msg"></div>
-
-            <button type="submit" id="reg-btn-continue" class="btn-cyber btn-primary-run btn-reg-submit">
-              CONTINUE TO GAME ➔
-            </button>
-          </form>
-
-          <div class="reg-footer-meta">
-            <span>TERMINAL: TECHVERSE_NODE_01</span>
-            <span>SYSTEM STATUS: READY</span>
           </div>
         </div>
       </section>
