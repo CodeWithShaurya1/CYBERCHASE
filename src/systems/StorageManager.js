@@ -884,7 +884,31 @@ export class StorageManager {
         localStorage.removeItem('cyberchase_local_authorizations');
       }
     } catch (_) { }
+    this.memoryPlayedMap = {};
+    this.memoryAuthSet.clear();
     return DEFAULT_LEADERBOARD;
+  }
+
+  // Reset tournament leaderboard via RPC if admin key provided
+  async resetTournamentLeaderboard(adminKey) {
+    if (this.isCloudConfigured && this.supabase) {
+      try {
+        const { data, error } = await this.supabase.rpc('reset_tournament_leaderboard', {
+          p_admin_key: (adminKey || '').trim()
+        });
+        if (!error && data && data.success) {
+          this.resetLocalLeaderboard();
+          return { success: true, message: data.message, deleted: data.deleted_records };
+        }
+        if (error) {
+          return { success: false, error: error.message };
+        }
+      } catch (err) {
+        return { success: false, error: err.message };
+      }
+    }
+    this.resetLocalLeaderboard();
+    return { success: true, message: 'Local storage reset' };
   }
 }
 

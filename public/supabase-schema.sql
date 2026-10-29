@@ -281,3 +281,42 @@ BEGIN
     ALTER PUBLICATION supabase_realtime ADD TABLE public.cyberchase_leaderboard;
   END IF;
 END $$;
+
+-- 8. Optional RPC: Reset Leaderboard for Live Tournament (requires Admin Key)
+CREATE OR REPLACE FUNCTION public.reset_tournament_leaderboard(p_admin_key TEXT)
+RETURNS JSONB
+LANGUAGE plpgsql
+SECURITY DEFINER
+SET search_path = public, private
+AS $$
+DECLARE
+  v_expected_hash TEXT;
+  v_provided_hash TEXT;
+  v_deleted_count INT;
+BEGIN
+  IF p_admin_key IS NULL OR trim(p_admin_key) = '' THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Invalid admin key');
+  END IF;
+
+  v_provided_hash := encode(sha256(trim(p_admin_key)::bytea), 'hex');
+  SELECT admin_key_hash INTO v_expected_hash FROM private.admin_config WHERE id = 1;
+
+  IF v_expected_hash IS NULL OR v_expected_hash != v_provided_hash THEN
+    RETURN jsonb_build_object('success', false, 'error', 'Invalid admin key');
+  END IF;
+
+  DELETE FROM public.cyberchase_leaderboard;
+  GET DIAGNOSTICS v_deleted_count = ROW_COUNT;
+  
+  DELETE FROM public.cyberchase_authorizations;
+
+  RETURN jsonb_build_object(
+    'success', true,
+    'message', 'Leaderboard and authorizations successfully reset for live tournament',
+    'deleted_records', v_deleted_count
+  );
+END;
+$$;
+
+GRANT EXECUTE ON FUNCTION public.reset_tournament_leaderboard(TEXT) TO anon, authenticated, service_role;
+
