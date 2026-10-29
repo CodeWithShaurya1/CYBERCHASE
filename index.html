@@ -29,7 +29,7 @@
 
             <h1 class="reg-title">
               PLAYER REGISTRATION
-              <span class="reg-title-accent">// TECHVERSE</span>
+              <span class="reg-title-accent"><span class="diamond-accent">◇</span> TECHVERSE</span>
             </h1>
 
             <p class="reg-subtitle">
@@ -93,9 +93,8 @@
 
               <div id="reg-error-global" class="global-error-msg"></div>
 
-              <button type="submit" id="reg-btn-continue" class="btn-cyber btn-primary-run btn-reg-submit">
-                <span class="btn-text">CONTINUE TO GAME</span>
-                <span class="btn-arrow" aria-hidden="true">→</span>
+              <button type="submit" id="reg-btn-continue" class="btn-primary-run btn-reg-submit">
+                CONTINUE TO GAME →
               </button>
             </form>
 
@@ -109,40 +108,53 @@
 
       <!-- ================= 1. OPENING / MENU SCREEN ================= -->
       <section id="screen-menu" class="screen hidden">
-        <div class="brand-badge">
-          <span class="pulse-dot"></span>
-          CSI TECHVERSE // ARCADE STALL
-        </div>
-        <h1 class="game-title">CYBERCHASE</h1>
-        <p class="game-tagline">SURVIVE THE CODE. OUTSMART THE SYSTEM.</p>
-
-        <!-- Registered Player Greeting Badge -->
-        <div id="menu-player-badge" class="authenticated-player-badge">
-          OPERATOR AUTHENTICATED
-        </div>
-
-        <div class="menu-actions">
-          <button id="btn-menu-start" class="btn-cyber btn-primary-run">
-            ⚡ START RUN
-          </button>
-          <div class="menu-row">
-            <button id="btn-menu-help" class="btn-cyber" style="flex:1;">
-              📖 HOW TO PLAY
-            </button>
-            <button id="btn-menu-leaderboard" class="btn-cyber" style="flex:1;">
-              🏆 LEADERBOARD
-            </button>
+        <div class="menu-container">
+          <!-- Small heading above the title -->
+          <div class="brand-badge menu-brand-badge">
+            <span class="pulse-dot"></span>
+            <span>CSI TECHVERSE // ARCADE STALL</span>
           </div>
-          <div class="menu-row">
-            <button id="btn-menu-change-player" class="btn-cyber" style="flex:1; border-color:var(--electric-purple);">
-              👤 CHANGE OPERATOR
+
+          <!-- Hero Section -->
+          <div class="menu-hero">
+            <h1 class="game-title">CYBERCHASE</h1>
+            <p class="game-tagline">SURVIVE THE CODE. OUTSMART THE SYSTEM.</p>
+          </div>
+
+          <!-- Registered Player Greeting Badge -->
+          <div id="menu-player-badge" class="authenticated-player-badge">
+            OPERATOR AUTHENTICATED
+          </div>
+
+          <!-- Cohesive, Lightweight Control System -->
+          <div class="menu-actions">
+            <!-- Primary Action: START RUN -->
+            <button id="btn-menu-start" class="btn-primary-run menu-btn-start" type="button">
+              ⚡ START RUN →
             </button>
-            <button id="btn-menu-sound" class="btn-cyber" style="flex:1;">
-              🔊 SOUND ON
-            </button>
-            <button id="btn-menu-fullscreen" class="btn-cyber btn-icon-only" title="Toggle Fullscreen">
-              ⛶
-            </button>
+
+            <!-- Secondary Actions: HOW TO PLAY & LEADERBOARD -->
+            <div class="menu-secondary-row">
+              <button id="btn-menu-help" class="menu-btn-secondary" type="button">
+                📖 HOW TO PLAY
+              </button>
+              <button id="btn-menu-leaderboard" class="menu-btn-secondary" type="button">
+                🏆 LEADERBOARD
+              </button>
+            </div>
+
+            <!-- Compact Utilities: CHANGE OPERATOR, SOUND, FULLSCREEN -->
+            <div class="menu-utility-bar">
+              <button id="btn-menu-change-player" class="menu-btn-utility" type="button" title="Change Operator">
+                👤 CHANGE OPERATOR
+              </button>
+              <button id="btn-menu-sound" class="menu-btn-utility" type="button" title="Toggle Sound">
+                🔊 SOUND ON
+              </button>
+              <button id="btn-menu-fullscreen" class="menu-btn-utility btn-icon-compact" type="button" title="Toggle Fullscreen" aria-label="Toggle Fullscreen">
+                ⛶
+              </button>
+            </div>
           </div>
         </div>
       </section>
