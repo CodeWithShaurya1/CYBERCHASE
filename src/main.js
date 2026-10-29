@@ -184,15 +184,8 @@ class CyberchaseApp {
           }
         },
         onEnemyCollision: () => {
-          if (!this.isGameActive || this.scoreManager.health <= 0) return;
-          audioManager.playWrong();
-          const result = this.scoreManager.handleEnemyCollision();
-          if (this.scoreManager.health <= 0 || (result && result.isDead)) {
-            if (this.questionPanel) {
-              this.questionPanel.cancelCountdown();
-            }
-            this.endGameRun(false);
-          }
+          // While question countdown is running, player is protected from damage.
+          // Health decreases only on question timeout with enemy in proximity.
         },
         onObstacleSpawned: () => {
           // Obstacle activated in maze
@@ -329,9 +322,26 @@ class CyberchaseApp {
         this.gameScene.player.triggerBoostEffect();
       }
     } else {
-      this.scoreManager.handleMistake(result.isTimeout, qId);
-      if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
-        this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+      if (result.isTimeout) {
+        // At the exact moment the question timer reaches zero:
+        // Check distance to all 3 enemies against the defined danger radius
+        const isEnemyNearby = this.gameScene ? this.gameScene.isAnyEnemyInDangerRadius(75) : false;
+
+        if (isEnemyNearby) {
+          // At least one enemy inside danger radius: reduce health by exactly 20%
+          audioManager.playWrong();
+          this.scoreManager.handleTimeoutWithDamage(qId);
+          if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
+            this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+          }
+        } else {
+          // Every enemy outside danger radius: do NOT reduce health
+          this.scoreManager.handleTimeoutNoDamage(qId);
+        }
+      } else {
+        // Player answered early: protected from damage! No health loss
+        audioManager.playWrong();
+        this.scoreManager.handleWrongAnswerEarly(qId);
       }
     }
 

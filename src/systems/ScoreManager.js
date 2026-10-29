@@ -114,7 +114,7 @@ export class ScoreManager {
   }
 
   // Authoritative Wrong Answer & Timeout processing function
-  handleMistake(arg1 = false, arg2 = null) {
+  handleMistake(arg1 = false, arg2 = null, applyHealthDamage = true) {
     let isTimeout = false;
     let questionId = null;
 
@@ -150,15 +150,17 @@ export class ScoreManager {
 
     let damageBlocked = false;
 
-    if (this.hasShield) {
-      // Shield absorbs one damage instance
-      this.hasShield = false;
-      damageBlocked = true;
-      this.onShieldChanged(false);
-    } else {
-      // 7. Health loss: reduce by 20% of maximum health (20 HP)
-      this.health = Math.max(0, this.health - 20);
-      this.onHealthChanged(this.health, true);
+    if (applyHealthDamage) {
+      if (this.hasShield) {
+        // Shield absorbs one damage instance
+        this.hasShield = false;
+        damageBlocked = true;
+        this.onShieldChanged(false);
+      } else {
+        // 7. Health loss: reduce by 20% of maximum health (20 HP)
+        this.health = Math.max(0, this.health - 20);
+        this.onHealthChanged(this.health, true);
+      }
     }
 
     // 9. Every two consecutive wrong answers: spawn one additional obstacle
@@ -177,6 +179,21 @@ export class ScoreManager {
       isDead: this.health <= 0,
       obstacleTriggered
     };
+  }
+
+  // Handle wrong answer submitted early by player (zero points, streak reset, NO health damage)
+  handleWrongAnswerEarly(questionId = null) {
+    return this.handleMistake(false, questionId, false);
+  }
+
+  // Handle question timeout without enemy in danger radius (streak reset, timeout counted, NO health damage)
+  handleTimeoutNoDamage(questionId = null) {
+    return this.handleMistake(true, questionId, false);
+  }
+
+  // Handle question timeout with enemy in danger radius (streak reset, timeout counted, -20% health damage)
+  handleTimeoutWithDamage(questionId = null) {
+    return this.handleMistake(true, questionId, true);
   }
 
   handleEnemyCollision() {

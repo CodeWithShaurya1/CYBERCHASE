@@ -309,9 +309,17 @@ export class GameScene extends Phaser.Scene {
     // Update Player automatic navigation
     this.player.update(delta, this.collectibles, this.powerups, this.obstacleManager.activeObstacles);
 
-    // Update Enemies with dynamic pursuit scaling
+    // Update Enemies with dynamic pursuit scaling & safe distance tracking
+    const playerPos = {
+      x: this.player.x,
+      y: this.player.y,
+      r: this.player.r,
+      c: this.player.c,
+      heading: this.player.heading
+    };
+
     this.enemies.forEach(enemy => {
-      enemy.update(delta, this.player.r, this.player.c, this.player.heading, progress, this.enemies);
+      enemy.update(delta, this.player.r, this.player.c, this.player.heading, progress, this.enemies, playerPos);
     });
 
     // Check Player collisions with Collectibles
@@ -395,36 +403,22 @@ export class GameScene extends Phaser.Scene {
     }
   }
 
-  checkEnemyCollisions() {
-    if (this.invulnerabilityTimer > 0) return;
-
-    for (const enemy of this.enemies) {
+  // Proximity detection for question timeouts
+  getEnemiesInDangerRadius(dangerRadius = 75) {
+    if (!this.player || !this.enemies || this.enemies.length === 0) return [];
+    return this.enemies.filter(enemy => {
       const dist = Math.hypot(this.player.x - enemy.x, this.player.y - enemy.y);
-      if (dist < 18) {
-        // Set 1.5s invulnerability cooldown to prevent multiple hits from one collision
-        this.invulnerabilityTimer = 1500;
-        this.particleEffects.emitDamageGlitch(this.player.x, this.player.y);
+      return dist <= dangerRadius;
+    });
+  }
 
-        // Flash player to indicate invulnerability
-        this.tweens.add({
-          targets: this.player.container,
-          alpha: 0.3,
-          duration: 150,
-          yoyo: true,
-          repeat: 4,
-          onComplete: () => {
-            if (this.player && this.player.container) {
-              this.player.container.setAlpha(1);
-            }
-          }
-        });
+  isAnyEnemyInDangerRadius(dangerRadius = 75) {
+    return this.getEnemiesInDangerRadius(dangerRadius).length > 0;
+  }
 
-        if (this.externalCallbacks.onEnemyCollision) {
-          this.externalCallbacks.onEnemyCollision();
-        }
-        break; // Prevent multiple enemy collisions in the same frame
-      }
-    }
+  checkEnemyCollisions() {
+    // Enemies maintain minimum safe distance during active questions and never physically touch the player.
+    // Health damage is evaluated strictly at question timeout via proximity detection.
   }
 
   shuffle(arr) {
