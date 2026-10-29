@@ -311,7 +311,7 @@ function createMockScene() {
     classList: createMockClassList()
   };
 
-  const mockCheckpoints = [20, 40, 60, 80].map(val => ({
+  const mockCheckpoints = [20, 40, 60, 80, 100].map(val => ({
     getAttribute: (attr) => attr === 'data-val' ? String(val) : null,
     classList: createMockClassList()
   }));
@@ -335,20 +335,21 @@ function createMockScene() {
     updateHealth: HUD.prototype.updateHealth
   };
 
-  // 100%: Full bar fill 100%, text 100%, all checkpoints active
+  // 100%: Full bar fill 100%, text 100%, all 5 checkpoints active
   hudInstance.updateHealth(100, false);
   assert(mockHealthFill.style.width === '100%', `Expected fill 100%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '100%', `Expected text 100%, got ${mockHealthVal.textContent}`);
   assert(!mockHealthVal.classList.contains('low'), '100% should not be low health');
   assert(!mockHealthFill.classList.contains('danger'), '100% fill should not be danger');
-  assert(mockCheckpoints.filter(cp => cp.classList.contains('active')).length === 4, 'All checkpoints active at 100%');
+  assert(mockCheckpoints.filter(cp => cp.classList.contains('active')).length === 5, 'All 5 checkpoints active at 100%');
 
-  // 80%: Fill 80%, text 80%, floating -20% text created, 80% checkpoint highlighted
+  // 80%: Fill 80%, text 80%, floating -20% text created, 80% checkpoint highlighted, 100 depleted
   hudInstance.updateHealth(80, true);
   assert(mockHealthFill.style.width === '80%', `Expected fill 80%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '80%', `Expected text 80%, got ${mockHealthVal.textContent}`);
   assert(popups.length > 0 && popups[popups.length - 1].textContent === '−20% HEALTH', 'Floating -20% HEALTH message created');
   assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '80').classList.contains('highlight-pulse'), '80% checkpoint highlighted on hit');
+  assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '100').classList.contains('depleted'), '100% checkpoint marked depleted');
 
   // 60%: Fill 60%, text 60%, checkpoint 80 depleted, 60 checkpoint highlighted
   hudInstance.updateHealth(60, true);
@@ -370,13 +371,13 @@ function createMockScene() {
   assert(mockHealthVal.textContent === '20%', `Expected text 20%, got ${mockHealthVal.textContent}`);
   assert(mockCheckpoints.find(cp => cp.getAttribute('data-val') === '20').classList.contains('highlight-pulse'), '20% checkpoint highlighted');
 
-  // 0%: Fill 0%, text 0%, all checkpoints depleted
+  // 0%: Fill 0%, text 0%, all 5 checkpoints depleted
   hudInstance.updateHealth(0, true);
   assert(mockHealthFill.style.width === '0%', `Expected fill 0%, got ${mockHealthFill.style.width}`);
   assert(mockHealthVal.textContent === '0%', `Expected text 0%, got ${mockHealthVal.textContent}`);
-  assert(mockCheckpoints.filter(cp => cp.classList.contains('depleted')).length === 4, 'All checkpoints depleted at 0%');
+  assert(mockCheckpoints.filter(cp => cp.classList.contains('depleted')).length === 5, 'All 5 checkpoints depleted at 0%');
 
-  pass(6, 'Segmented horizontal health bar, 20% intervals, fill shrinking, and floating -20% HEALTH verified for all 6 states');
+  pass(6, 'Segmented horizontal health bar, 5 checkpoints (20-100%), fill shrinking, and floating -20% HEALTH verified for all 6 states');
 }
 
 // ------------------------------------------------------------------------------

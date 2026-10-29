@@ -251,6 +251,9 @@ body, html {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 1.25rem;
+  width: 100%;
+  box-sizing: border-box;
   padding: 0.5rem 1rem;
   background: var(--surface-card);
   border: 1px solid var(--border-neon);
@@ -264,6 +267,8 @@ body, html {
   display: flex;
   align-items: center;
   gap: 1.2rem;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .hud-stat {
@@ -296,8 +301,9 @@ body, html {
   display: flex;
   flex-direction: column;
   gap: 0.25rem;
-  min-width: 175px;
-  max-width: 195px;
+  flex: 1 1 auto;
+  min-width: 160px;
+  max-width: none;
   position: relative;
 }
 
@@ -436,6 +442,14 @@ body, html {
   border-left-color: #fff;
   transform: scaleY(1.3);
   z-index: 4;
+}
+
+.health-checkpoint[data-val="100"] {
+  right: 0;
+  left: auto !important;
+  margin-left: 0;
+  border-left: none;
+  border-right: 1px solid rgba(255, 255, 255, 0.4);
 }
 
 /* Subtle Ticks below the bar */
