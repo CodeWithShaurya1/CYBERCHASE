@@ -4,23 +4,49 @@ import { createClient } from '@supabase/supabase-js';
 const LOCAL_STORAGE_KEY = 'cyberchase_local_leaderboard_v2';
 const SUBMITTED_SESSIONS_KEY = 'cyberchase_submitted_sessions';
 
-// Default starter champions for CSI TechVerse with Enrollment Numbers (ALL UPPER CASE) - V2 Scoring Standard
-const DEFAULT_LEADERBOARD = [
-  { rank: 1, name: 'AARAV SHARMA', enrollment: '0101CS221001', score: 2850, accuracy: 96, correct_answers: 24, wrong_answers: 1, streak: 12, fragments: 14, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 2, name: 'PRIYA PATEL', enrollment: '0101IT221045', score: 2450, accuracy: 92, correct_answers: 21, wrong_answers: 2, streak: 9, fragments: 12, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 3, name: 'ROHAN VERMA', enrollment: '0101EC231012', score: 2150, accuracy: 88, correct_answers: 19, wrong_answers: 3, streak: 8, fragments: 10, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 4, name: 'ANANYA GUPTA', enrollment: '0101CS231089', score: 1800, accuracy: 85, correct_answers: 17, wrong_answers: 3, streak: 6, fragments: 8, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 5, name: 'VIKRAM SINGH', enrollment: '0101ME221034', score: 1550, accuracy: 80, correct_answers: 15, wrong_answers: 4, streak: 5, fragments: 8, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 6, name: 'SNEHA REDDY', enrollment: '0101IT231067', score: 1300, accuracy: 78, correct_answers: 14, wrong_answers: 4, streak: 4, fragments: 6, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 7, name: 'DEVANSH JOSHI', enrollment: '0101CS231023', score: 1150, accuracy: 75, correct_answers: 13, wrong_answers: 4, streak: 4, fragments: 6, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 8, name: 'KAVYA NAIR', enrollment: '0101EE221056', score: 950, accuracy: 70, correct_answers: 12, wrong_answers: 5, streak: 3, fragments: 4, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 9, name: 'ARYAN MEHTA', enrollment: '0101AI231015', score: 750, accuracy: 68, correct_answers: 11, wrong_answers: 5, streak: 3, fragments: 4, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true },
-  { rank: 10, name: 'TANVI SAXENA', enrollment: '0101CS231099', score: 600, accuracy: 65, correct_answers: 10, wrong_answers: 5, streak: 2, fragments: 2, scoring_version: 'v2', date: 'TechVerse Day 1', source: 'local', isStarterMock: true }
-];
+// Production Mode: Zero Demo Data — Only Real User Runs Recorded
+const DEFAULT_LEADERBOARD = [];
 
-export const STARTER_MOCK_ENROLLMENTS = new Set(
-  DEFAULT_LEADERBOARD.map(d => d.enrollment)
-);
+export const DEMO_ENROLLMENTS = new Set([
+  '0101CS221001',
+  '0101IT221045',
+  '0101EC231012',
+  '0101CS231089',
+  '0101ME221034',
+  '0101IT231067',
+  '0101CS231023',
+  '0101EE221056',
+  '0101AI231015',
+  '0101CS231099',
+  'TEST12345',
+  '0101TEST2026'
+]);
+
+export const DEMO_NAMES = new Set([
+  'AARAV SHARMA',
+  'PRIYA PATEL',
+  'ROHAN VERMA',
+  'ANANYA GUPTA',
+  'VIKRAM SINGH',
+  'SNEHA REDDY',
+  'DEVANSH JOSHI',
+  'KAVYA NAIR',
+  'ARYAN MEHTA',
+  'TANVI SAXENA',
+  'TEST PLAYER'
+]);
+
+export const STARTER_MOCK_ENROLLMENTS = DEMO_ENROLLMENTS;
+
+export function isDemoEntry(entry) {
+  if (!entry) return false;
+  if (entry.isStarterMock) return true;
+  const normEnrollment = (entry.enrollment || entry.normalized_enrollment || '').trim().toUpperCase();
+  const normName = (entry.name || '').trim().toUpperCase();
+  if (DEMO_ENROLLMENTS.has(normEnrollment)) return true;
+  if (DEMO_NAMES.has(normName)) return true;
+  return false;
+}
 
 export class StorageManager {
   constructor() {
@@ -134,46 +160,17 @@ export class StorageManager {
     try {
       if (typeof localStorage !== 'undefined') {
         const existing = localStorage.getItem(LOCAL_STORAGE_KEY);
-        if (!existing) {
-          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(DEFAULT_LEADERBOARD));
-        } else {
-          // If existing leaderboard is contaminated with pre-overhaul v1 scores (> 3500 or no scoring_version === 'v2')
+        if (existing) {
           try {
             const parsed = JSON.parse(existing);
-            if (Array.isArray(parsed) && parsed.some(r => r.score > 3500 || r.scoring_version === 'v1' || !r.scoring_version)) {
-              // Archive legacy pre-overhaul records safely
-              localStorage.setItem('cyberchase_legacy_leaderboard_v1', existing);
-
-              // Preserve any genuine v2 runs, and populate with calibrated v2 default champions
-              const genuineV2 = parsed.filter(r => r.scoring_version === 'v2' && r.score <= 3500);
-              const merged = [...genuineV2];
-              DEFAULT_LEADERBOARD.forEach(def => {
-                if (!merged.some(m => m.enrollment === def.enrollment)) {
-                  merged.push(def);
-                }
-              });
-              merged.sort((a, b) => {
-                if (b.score !== a.score) return b.score - a.score;
-                if (b.accuracy !== a.accuracy) return b.accuracy - a.accuracy;
-                return 0;
-              });
-              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(merged.slice(0, 20).map((it, idx) => ({ ...it, rank: idx + 1 }))));
-            }
-
-            // Ensure starter mock records in existing storage have isStarterMock flag
             if (Array.isArray(parsed)) {
-              let updated = false;
-              parsed.forEach(r => {
-                if (r && STARTER_MOCK_ENROLLMENTS.has(this.normalizeEnrollment(r.enrollment)) && !r.isStarterMock) {
-                  r.isStarterMock = true;
-                  updated = true;
-                }
-              });
-              if (updated) {
-                localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(parsed));
-              }
+              // Strictly remove any demo records from local storage
+              const realOnly = parsed.filter(r => !isDemoEntry(r));
+              localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(realOnly));
             }
           } catch (_) { }
+        } else {
+          localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify([]));
         }
       }
     } catch (_) { }
@@ -246,6 +243,11 @@ export class StorageManager {
       return { eligible: false, reason: 'EMPTY_ENROLLMENT' };
     }
 
+    // Demo / mock enrollments should never block students
+    if (DEMO_ENROLLMENTS.has(normalized)) {
+      return { eligible: true, attempts: 0, hasAuthorization: false, source: 'local' };
+    }
+
     let cloudAttempts = 0;
     let cloudHasAuth = false;
     let cloudChecked = false;
@@ -274,8 +276,12 @@ export class StorageManager {
             .or(`normalized_enrollment.eq.${normalized},enrollment.ilike.${normalized}`);
 
           if (!queryError && Array.isArray(records)) {
-            const attempts = records.length;
-            if (attempts > 0) {
+            // Strictly exclude any demo records
+            const realRecords = records.filter(r => !isDemoEntry(r));
+            const attempts = realRecords.length;
+            // Always check if there is an unused authorization for this student in cloud
+            let hasAuth = false;
+            try {
               const { data: authRecords } = await this.supabase
                 .from('cyberchase_authorizations')
                 .select('id')
@@ -283,10 +289,16 @@ export class StorageManager {
                 .is('used_at', null)
                 .limit(1);
 
-              const hasAuth = Array.isArray(authRecords) && authRecords.length > 0;
+              if (Array.isArray(authRecords) && authRecords.length > 0) {
+                hasAuth = true;
+                this.saveLocalAuthorization(normalized);
+              }
+            } catch (_) {}
+
+            if (attempts > 0) {
               return { checked: true, attempts, hasAuth, explicitBlock: !hasAuth };
             }
-            return { checked: true, attempts: 0, hasAuth: false, explicitBlock: false };
+            return { checked: true, attempts: 0, hasAuth, explicitBlock: false };
           }
           return { checked: false, attempts: 0, hasAuth: false, explicitBlock: false };
         })();
@@ -300,6 +312,17 @@ export class StorageManager {
           cloudChecked = true;
           cloudAttempts = cloudRes.attempts;
           cloudHasAuth = cloudRes.hasAuth;
+
+          // Check if authorized locally in memory or storage first
+          const localCheck = this.checkLocalEligibility(normalized);
+          if (cloudHasAuth || localCheck.hasAuthorization) {
+            return {
+              eligible: true,
+              attempts: Math.max(cloudAttempts, localCheck.attempts),
+              hasAuthorization: true,
+              source: cloudHasAuth ? 'cloud' : 'local'
+            };
+          }
 
           if (cloudRes.explicitBlock) {
             return {
@@ -348,6 +371,10 @@ export class StorageManager {
   }
 
   checkLocalEligibility(normalizedEnrollment) {
+    if (DEMO_ENROLLMENTS.has(normalizedEnrollment)) {
+      return { eligible: true, attempts: 0, hasAuthorization: false, source: 'local' };
+    }
+
     let attempts = this.memoryPlayedMap[normalizedEnrollment] || 0;
     let hasAuth = this.memoryAuthSet.has(normalizedEnrollment);
 
@@ -360,15 +387,14 @@ export class StorageManager {
           attempts = Math.max(attempts, playedMap[normalizedEnrollment]);
         }
 
-        // 2. Check local leaderboard entries for previous scores with this enrollment (ignoring starter mocks)
+        // 2. Check local leaderboard entries for previous scores with this enrollment (ignoring demo entries)
         const lbData = localStorage.getItem(LOCAL_STORAGE_KEY);
         if (lbData) {
           const lbList = JSON.parse(lbData);
           if (Array.isArray(lbList)) {
             const countInLb = lbList.filter(row =>
               row &&
-              !row.isStarterMock &&
-              !STARTER_MOCK_ENROLLMENTS.has(this.normalizeEnrollment(row.enrollment)) &&
+              !isDemoEntry(row) &&
               this.normalizeEnrollment(row.enrollment) === normalizedEnrollment
             ).length;
             attempts = Math.max(attempts, countInLb);
@@ -420,6 +446,7 @@ export class StorageManager {
         if (resp.status === 200) {
           const resData = await resp.json();
           if (resData.success) {
+            this.saveLocalAuthorization(normalized);
             return { success: true, message: resData.message || 'Attempt authorized' };
           }
         } else if (resp.status === 401 || resp.status === 403) {
@@ -445,6 +472,7 @@ export class StorageManager {
 
           if (!rpcError && rpcData) {
             if (rpcData.success) {
+              this.saveLocalAuthorization(normalized);
               return { success: true, message: rpcData.message || 'Attempt authorized' };
             } else {
               return { success: false, error: rpcData.error || 'Invalid admin key' };
@@ -467,21 +495,29 @@ export class StorageManager {
 
         if (hashHex === EXPECTED_HASH) {
           // Store local authorization in memory and localStorage
-          this.memoryAuthSet.add(normalized);
-          if (typeof localStorage !== 'undefined') {
-            const authData = localStorage.getItem('cyberchase_local_authorizations');
-            const authList = authData ? JSON.parse(authData) : [];
-            if (!authList.includes(normalized)) {
-              authList.push(normalized);
-              localStorage.setItem('cyberchase_local_authorizations', JSON.stringify(authList));
-            }
-          }
+          this.saveLocalAuthorization(normalized);
           return { success: true, message: 'Local attempt authorized' };
         }
       }
     } catch (_) { }
 
     return { success: false, error: 'Invalid admin key' };
+  }
+
+  // Save student authorization locally in memory and localStorage
+  saveLocalAuthorization(normalized) {
+    if (!normalized) return;
+    this.memoryAuthSet.add(normalized);
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const authData = localStorage.getItem('cyberchase_local_authorizations');
+        const authList = authData ? JSON.parse(authData) : [];
+        if (!authList.includes(normalized)) {
+          authList.push(normalized);
+          localStorage.setItem('cyberchase_local_authorizations', JSON.stringify(authList));
+        }
+      }
+    } catch (_) {}
   }
 
   // Sync any non-mock local scores to the cloud database
@@ -563,6 +599,10 @@ export class StorageManager {
           query = query.eq('scoring_version', 'v2');
         }
 
+        // Exclude all demo enrollments at database level
+        const demoList = Array.from(DEMO_ENROLLMENTS).join(',');
+        query = query.not('enrollment', 'in', `(${demoList})`);
+
         const { data, error } = await query
           .order('score', { ascending: false })
           .order('accuracy', { ascending: false })
@@ -570,7 +610,10 @@ export class StorageManager {
           .limit(10);
 
         if (!error && Array.isArray(data)) {
-          const cloudEntries = data.map((row, idx) => ({
+          // Additional safeguard to filter out any demo or starter mock entries
+          const realCloudData = data.filter(row => !isDemoEntry(row));
+
+          const cloudEntries = realCloudData.map((row, idx) => ({
             rank: idx + 1,
             name: row.name,
             enrollment: row.enrollment || 'N/A',
@@ -586,19 +629,9 @@ export class StorageManager {
             source: 'cloud'
           }));
 
-          // If fewer than 10 rows from cloud, fill remaining slots with baseline champions
-          let entries = cloudEntries;
-          if (entries.length < 10) {
-            const existingEnrollments = new Set(entries.map(e => this.normalizeEnrollment(e.enrollment)));
-            const defaults = DEFAULT_LEADERBOARD
-              .filter(d => !existingEnrollments.has(this.normalizeEnrollment(d.enrollment)))
-              .map(d => ({ ...d, source: 'cloud' }));
-            entries = [...entries, ...defaults].slice(0, 10).map((it, idx) => ({ ...it, rank: idx + 1 }));
-          }
-
           return {
             source: 'cloud',
-            entries
+            entries: cloudEntries
           };
         }
       } catch (err) {
@@ -617,7 +650,10 @@ export class StorageManager {
     try {
       if (typeof localStorage !== 'undefined') {
         const stored = localStorage.getItem(LOCAL_STORAGE_KEY);
-        let list = stored ? JSON.parse(stored) : [...DEFAULT_LEADERBOARD];
+        let list = stored ? JSON.parse(stored) : [];
+
+        // Strictly filter out any demo data
+        list = list.filter(r => !isDemoEntry(r));
 
         if (filterVersion === 'all') {
           const legacy = localStorage.getItem('cyberchase_legacy_leaderboard_v1');
@@ -625,13 +661,12 @@ export class StorageManager {
             try {
               const legacyList = JSON.parse(legacy);
               if (Array.isArray(legacyList)) {
-                list = [...list, ...legacyList];
+                list = [...list, ...legacyList.filter(r => !isDemoEntry(r))];
               }
             } catch (_) { }
           }
         } else if (filterVersion === 'v2') {
-          const v2Only = list.filter(r => r.scoring_version === 'v2' || r.score <= 3500);
-          list = v2Only.length > 0 ? v2Only : [...DEFAULT_LEADERBOARD];
+          list = list.filter(r => r.scoring_version === 'v2' || r.score <= 3500);
         }
 
         list.sort((a, b) => {
@@ -642,7 +677,7 @@ export class StorageManager {
         return list.slice(0, 10).map((item, idx) => ({ ...item, rank: idx + 1, source: 'local' }));
       }
     } catch (_) { }
-    return DEFAULT_LEADERBOARD.slice(0, 10).map((item, idx) => ({ ...item, rank: idx + 1, source: 'local' }));
+    return [];
   }
 
   // Submit score with Full Name, Enrollment Number, and telemetry

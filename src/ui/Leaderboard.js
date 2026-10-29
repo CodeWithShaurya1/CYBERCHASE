@@ -169,6 +169,19 @@ export class Leaderboard {
 
     this.tableBodyEl.innerHTML = '';
 
+    if (!entries || entries.length === 0) {
+      this.tableBodyEl.innerHTML = `
+        <tr>
+          <td colspan="7" style="text-align:center; padding:2.8rem 1rem; color:var(--text-secondary); font-family:var(--font-heading);">
+            <div style="font-size:1.8rem; margin-bottom:0.5rem; opacity:0.85;">⚡</div>
+            <div style="font-size:0.95rem; font-weight:700; color:var(--text-primary); letter-spacing:0.06em;">NO REAL OPERATOR RUNS YET</div>
+            <div style="font-size:0.75rem; color:var(--neon-cyan); margin-top:0.35rem; font-family:var(--font-mono);">BE THE FIRST TO ENTER THE GRID AND CLIMB THE LEADERBOARD</div>
+          </td>
+        </tr>
+      `;
+      return;
+    }
+
     entries.forEach((row) => {
       const tr = document.createElement('tr');
 

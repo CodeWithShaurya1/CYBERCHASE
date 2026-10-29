@@ -355,10 +355,11 @@ function pass(testNum, title) {
 {
   const storage = new StorageManager();
   const testSessionId = `unique_sess_${Date.now()}_test18`;
+  const testEnrollment = `TEST_${Date.now()}`;
 
   const sub1 = await storage.submitScore({
     name: 'TEST PLAYER',
-    enrollment: '0101TEST2026',
+    enrollment: testEnrollment,
     score: 1550,
     accuracy: 80,
     correct_answers: 14,
@@ -371,7 +372,7 @@ function pass(testNum, title) {
 
   const sub2 = await storage.submitScore({
     name: 'TEST PLAYER',
-    enrollment: '0101TEST2026',
+    enrollment: testEnrollment,
     score: 1550
   }, testSessionId);
 
@@ -384,9 +385,10 @@ function pass(testNum, title) {
 // ------------------------------------------------------------------------------
 {
   const storage = new StorageManager();
-  const testStudent = '  0101cs991122  ';
+  const randNum = Math.floor(100000 + Math.random() * 900000);
+  const testStudent = `  0101cs${randNum}  `;
   const normalized = storage.normalizeEnrollment(testStudent);
-  assert(normalized === '0101CS991122', `Expected uppercase normalized, got ${normalized}`);
+  assert(normalized === `0101CS${randNum}`, `Expected uppercase normalized, got ${normalized}`);
 
   // Initial eligibility
   const el1 = await storage.checkStudentEligibility(testStudent);
@@ -402,22 +404,22 @@ function pass(testNum, title) {
   }, sId1);
   assert(res1.success === true, 'Attempt 1 submission should succeed');
   assert(res1.sanitizedName === 'PRIYA VERMA', 'Name must be saved in UPPERCASE');
-  assert(res1.sanitizedEnrollment === '0101CS991122', 'Enrollment must be saved in UPPERCASE');
+  assert(res1.sanitizedEnrollment === `0101CS${randNum}`, 'Enrollment must be saved in UPPERCASE');
 
   // Returning student must be blocked
-  const el2 = await storage.checkStudentEligibility('0101CS991122');
+  const el2 = await storage.checkStudentEligibility(`0101CS${randNum}`);
   assert(el2.eligible === false, 'Played student must be strictly blocked');
 
   // Admin override with invalid key fails
-  const badKeyRes = await storage.authorizeAttemptWithAdminKey('0101CS991122', 'WRONG_KEY');
+  const badKeyRes = await storage.authorizeAttemptWithAdminKey(`0101CS${randNum}`, 'WRONG_KEY');
   assert(badKeyRes.success === false, 'Invalid admin key must fail');
 
   // Admin override with SHAURYA@GAME999 succeeds
-  const goodKeyRes = await storage.authorizeAttemptWithAdminKey('0101CS991122', 'SHAURYA@GAME999');
+  const goodKeyRes = await storage.authorizeAttemptWithAdminKey(`0101CS${randNum}`, 'SHAURYA@GAME999');
   assert(goodKeyRes.success === true, 'Valid admin key must authorize attempt');
 
   // After authorization, eligible for second attempt
-  const el3 = await storage.checkStudentEligibility('0101CS991122');
+  const el3 = await storage.checkStudentEligibility(`0101CS${randNum}`);
   assert(el3.eligible === true && el3.hasAuthorization === true, 'Authorized student must be eligible');
 
   // Submit attempt #2
@@ -537,7 +539,7 @@ function pass(testNum, title) {
 // ------------------------------------------------------------------------------
 {
   const storage = new StorageManager();
-  const testStudent = '0101CS249988';
+  const testStudent = `0101CS_${Date.now()}`;
   
   // 1. Fresh student before run
   const elBefore = await storage.checkStudentEligibility(testStudent);
