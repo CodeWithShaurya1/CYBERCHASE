@@ -195,16 +195,11 @@ export class Leaderboard {
         ? ` <span style="font-size:0.68rem; color:var(--electric-purple); border:1px solid rgba(157,78,221,0.5); padding:1px 4px; border-radius:3px;">RUN #${row.attempt}</span>`
         : '';
 
-      const isLegacy = row.scoring_version === 'v1' || (!row.scoring_version && row.score > 4000);
-      const versionBadge = isLegacy
-        ? ` <span style="font-size:0.65rem; color:var(--text-secondary); opacity:0.75;">(v1)</span>`
-        : ` <span style="font-size:0.65rem; color:var(--neon-cyan); opacity:0.85;">[v2]</span>`;
-
       tr.innerHTML = `
         <td class="${rankClass}">${rankIcon}</td>
         <td style="font-weight:700; color:var(--text-primary);">${row.name}</td>
         <td style="font-family:var(--font-mono); color:var(--neon-magenta); font-size:0.8rem;">${row.enrollment || 'N/A'}${attemptBadge}</td>
-        <td style="color:var(--neon-cyan); font-weight:700;">${row.score.toLocaleString()}${versionBadge}</td>
+        <td style="color:var(--neon-cyan); font-weight:700;">${row.score.toLocaleString()}</td>
         <td>${row.accuracy}%</td>
         <td>${row.streak}🔥</td>
         <td style="color:var(--text-secondary); font-size:0.75rem;">${row.date || 'Day 1'}</td>
