@@ -1,0 +1,559 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>CYBERCHASE — Survive the Code | CSI TechVerse</title>
+    <meta name="description" content="CYBERCHASE: A fast-paced cyberpunk arcade programming survival challenge built for CSI TechVerse. Survive the rogue AI neon maze through code mastery." />
+    <link rel="stylesheet" href="/src/styles/main.css" />
+  </head>
+  <body>
+    <!-- Background Digital Rain Canvas -->
+    <canvas id="canvas-matrix"></canvas>
+    <div class="cyber-grid-overlay"></div>
+    <div class="crt-scanlines" id="crt-overlay"></div>
+
+    <div id="app">
+      <!-- ================= 0. PLAYER REGISTRATION SCREEN (ENTRY POINT) ================= -->
+      <section id="screen-registration" class="screen">
+        <div class="registration-card">
+          <div class="brand-badge">
+            <span class="pulse-dot"></span>
+            CSI TECHVERSE // PLAYER ONBOARDING
+          </div>
+          <h1 class="reg-title">PLAYER REGISTRATION // TECHVERSE</h1>
+          <p class="reg-subtitle">AUTHENTICATE CREDENTIALS TO ENTER THE SYSTEM</p>
+
+          <form id="form-registration" class="reg-form" novalidate>
+            <!-- Field 1: Full Name -->
+            <div class="form-group">
+              <label for="reg-input-name" class="form-label">
+                <span class="label-prefix">[01]</span> FULL NAME <span class="required-star">*</span>
+              </label>
+              <input
+                type="text"
+                id="reg-input-name"
+                class="input-cyber input-reg"
+                placeholder="ENTER YOUR FULL NAME"
+                maxlength="40"
+                autocomplete="off"
+                style="text-transform: uppercase;"
+                required
+              />
+              <span id="reg-error-name" class="input-error-msg"></span>
+            </div>
+
+            <!-- Field 2: Enrollment Number -->
+            <div class="form-group">
+              <label for="reg-input-enrollment" class="form-label">
+                <span class="label-prefix">[02]</span> ENROLLMENT NUMBER <span class="required-star">*</span>
+              </label>
+              <input
+                type="text"
+                id="reg-input-enrollment"
+                class="input-cyber input-reg"
+                placeholder="ENTER YOUR ENROLLMENT NUMBER"
+                maxlength="40"
+                autocomplete="off"
+                style="text-transform: uppercase;"
+                required
+              />
+              <span id="reg-error-enrollment" class="input-error-msg"></span>
+            </div>
+
+            <div id="reg-error-global" class="global-error-msg"></div>
+
+            <button type="submit" id="reg-btn-continue" class="btn-cyber btn-primary-run btn-reg-submit">
+              CONTINUE TO GAME ➔
+            </button>
+          </form>
+
+          <div class="reg-footer-meta">
+            <span>TERMINAL: TECHVERSE_NODE_01</span>
+            <span>SYSTEM STATUS: READY</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 1. OPENING / MENU SCREEN ================= -->
+      <section id="screen-menu" class="screen hidden">
+        <div class="brand-badge">
+          <span class="pulse-dot"></span>
+          CSI TECHVERSE // ARCADE STALL
+        </div>
+        <h1 class="game-title">CYBERCHASE</h1>
+        <p class="game-tagline">SURVIVE THE CODE. OUTSMART THE SYSTEM.</p>
+
+        <!-- Registered Player Greeting Badge -->
+        <div id="menu-player-badge" class="authenticated-player-badge">
+          OPERATOR AUTHENTICATED
+        </div>
+
+        <div class="menu-actions">
+          <button id="btn-menu-start" class="btn-cyber btn-primary-run">
+            ⚡ START RUN
+          </button>
+          <div class="menu-row">
+            <button id="btn-menu-help" class="btn-cyber" style="flex:1;">
+              📖 HOW TO PLAY
+            </button>
+            <button id="btn-menu-leaderboard" class="btn-cyber" style="flex:1;">
+              🏆 LEADERBOARD
+            </button>
+          </div>
+          <div class="menu-row">
+            <button id="btn-menu-change-player" class="btn-cyber" style="flex:1; border-color:var(--electric-purple);">
+              👤 CHANGE OPERATOR
+            </button>
+            <button id="btn-menu-sound" class="btn-cyber" style="flex:1;">
+              🔊 SOUND ON
+            </button>
+            <button id="btn-menu-fullscreen" class="btn-cyber btn-icon-only" title="Toggle Fullscreen">
+              ⛶
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 2. GAMEPLAY SCREEN ================= -->
+      <section id="screen-game" class="screen hidden">
+        <!-- Top HUD Bar -->
+        <header class="hud-bar">
+          <div class="hud-group">
+            <div class="hud-stat">
+              <span class="stat-label">SYSTEM CLOCK</span>
+              <span id="hud-time" class="stat-value">02:00</span>
+            </div>
+            <div class="hud-stat">
+              <span class="stat-label">TOTAL SCORE</span>
+              <span id="hud-score" class="stat-value">0</span>
+            </div>
+            <div class="hud-stat hud-player-stat">
+              <span class="stat-label">OPERATOR</span>
+              <span id="hud-player-name" class="stat-value player-name-val">OPERATOR</span>
+            </div>
+          </div>
+
+          <!-- 5-Segment Health Meter -->
+          <div class="health-meter">
+            <span class="stat-label">CORE INTEGRITY</span>
+            <div class="health-segments">
+              <div class="health-segment active" data-seg="1"></div>
+              <div class="health-segment active" data-seg="2"></div>
+              <div class="health-segment active" data-seg="3"></div>
+              <div class="health-segment active" data-seg="4"></div>
+              <div class="health-segment active" data-seg="5"></div>
+            </div>
+          </div>
+
+          <div class="hud-group">
+            <div class="hud-stat">
+              <span class="stat-label">VELOCITY</span>
+              <span id="hud-speed" class="stat-value">1.0x</span>
+            </div>
+            <div class="hud-stat">
+              <span class="stat-label">STREAK</span>
+              <span id="hud-streak" class="stat-value">0🔥</span>
+            </div>
+            <div id="hud-shield" class="shield-active-badge">
+              🛡️ SHIELD
+            </div>
+            <div style="display: flex; gap: 0.4rem;">
+              <button id="btn-hud-pause" class="btn-cyber btn-icon-only" title="Pause Game">⏸</button>
+              <button id="btn-hud-mute" class="btn-cyber btn-icon-only" title="Toggle Audio">🔊</button>
+              <button id="btn-hud-fullscreen" class="btn-cyber btn-icon-only" title="Fullscreen">⛶</button>
+            </div>
+          </div>
+        </header>
+
+        <!-- Main Viewport: Maze + Question Terminal -->
+        <main class="game-viewport">
+          <!-- Phaser 3 Canvas Container -->
+          <div id="phaser-container"></div>
+
+          <!-- Holographic Question Terminal -->
+          <aside class="question-terminal">
+            <div>
+              <div class="question-header">
+                <div>
+                  <span id="q-category" class="badge-tag badge-python">PYTHON</span>
+                  <span id="q-difficulty" class="badge-tag" style="background:rgba(255,255,255,0.1); margin-left:0.4rem;">EASY</span>
+                </div>
+                <span id="q-number" style="font-family:var(--font-display); font-size:0.85rem; color:var(--text-secondary);">Q#01</span>
+              </div>
+
+              <!-- 10-Second Timer Progress Bar -->
+              <div class="question-timer-wrapper">
+                <div class="timer-track">
+                  <div id="q-timer-fill" class="timer-fill"></div>
+                </div>
+              </div>
+
+              <!-- Question Content & Code -->
+              <div class="question-body">
+                <p id="q-text" class="question-text">Initializing Question Stream...</p>
+                <pre id="q-code" class="code-snippet" style="display: none;"></pre>
+              </div>
+            </div>
+
+            <!-- Answer Options & Feedback (Elevated for persistent visibility during countdown) -->
+            <div class="question-answers-container">
+              <div id="q-answers" class="answers-grid"></div>
+              <div id="q-feedback" class="terminal-feedback"></div>
+            </div>
+
+            <!-- Full-Panel Animated Countdown Overlay (3 -> 2 -> 1) -->
+            <div id="q-countdown-overlay" class="terminal-countdown-overlay hidden">
+              <div class="countdown-decor-grid"></div>
+
+              <!-- Previous Question Outcome Badge -->
+              <div id="countdown-outcome-badge" class="countdown-outcome correct">
+                ✓ CORRECT // SYSTEM ACCELERATED (+100 PTS)
+              </div>
+
+              <!-- Futuristic HUD Circular Progress Ring -->
+              <div class="countdown-hud-container">
+                <svg class="countdown-hud-svg" viewBox="0 0 160 160">
+                  <circle class="hud-ring-outer" cx="80" cy="80" r="74"></circle>
+                  <circle class="hud-ring-track" cx="80" cy="80" r="64"></circle>
+                  <circle id="countdown-ring-fill" class="hud-ring-fill" cx="80" cy="80" r="64"></circle>
+                </svg>
+
+                <div class="countdown-digit-wrapper">
+                  <div id="countdown-digit" class="countdown-digit">3</div>
+                  <div id="countdown-glitch" class="countdown-glitch-layer" aria-hidden="true">3</div>
+                </div>
+              </div>
+
+              <!-- Cyber Labels -->
+              <div class="countdown-meta">
+                <div class="countdown-main-label">
+                  <span class="blinking-dot"></span>
+                  NEXT QUESTION INITIALIZING
+                </div>
+                <div class="countdown-status-stream">GET READY...</div>
+              </div>
+            </div>
+          </aside>
+        </main>
+      </section>
+
+      <!-- ================= 3. GAME OVER / RESULTS SCREEN ================= -->
+      <section id="screen-gameover" class="screen hidden">
+        <div class="gameover-card">
+          <h2 id="go-title" class="gameover-title terminated">GAME OVER // RUN TERMINATED</h2>
+          <div id="go-player-badge" class="authenticated-player-badge" style="margin-bottom:0.8rem;">
+            OPERATOR: -- | ENROLLMENT: --
+          </div>
+
+          <div class="gameover-score-hero">
+            <span class="stat-label">FINAL SCORE</span>
+            <div id="go-score" class="hero-score-val">0</div>
+          </div>
+
+          <!-- Statistics Matrix -->
+          <div class="stats-matrix">
+            <div class="matrix-cell">
+              <div class="matrix-label">ACCURACY</div>
+              <div id="go-stat-acc" class="matrix-val">0%</div>
+            </div>
+            <div class="matrix-cell">
+              <div class="matrix-label">MAX STREAK</div>
+              <div id="go-stat-streak" class="matrix-val">0x</div>
+            </div>
+            <div class="matrix-cell">
+              <div class="matrix-label">CORRECT</div>
+              <div id="go-stat-correct" class="matrix-val" style="color:var(--success-green);">0</div>
+            </div>
+            <div class="matrix-cell">
+              <div class="matrix-label">MISTAKES</div>
+              <div id="go-stat-wrong" class="matrix-val" style="color:var(--warning-red);">0</div>
+            </div>
+            <div class="matrix-cell">
+              <div class="matrix-label">DATA FRAGMENTS</div>
+              <div id="go-stat-fragments" class="matrix-val" style="color:var(--neon-cyan);">0</div>
+            </div>
+            <div class="matrix-cell">
+              <div class="matrix-label">SURVIVAL TIME</div>
+              <div id="go-stat-time" class="matrix-val">0s</div>
+            </div>
+            <div class="matrix-cell">
+              <div class="matrix-label">LEADERBOARD RANK</div>
+              <div id="go-stat-rank" class="matrix-val" style="color:var(--neon-yellow);">#--</div>
+            </div>
+          </div>
+
+          <!-- Automatic Submission Status -->
+          <div id="go-submit-status" class="auto-submit-banner"></div>
+
+          <!-- Primary Actions -->
+          <div style="display:flex; flex-wrap:wrap; gap:0.8rem; justify-content:center; margin-top:1.2rem;">
+            <button id="go-btn-next-player" class="btn-cyber btn-primary-run" style="font-size:1rem; padding:0.95rem 2rem;">
+              ⚡ NEXT PLAYER
+            </button>
+            <button id="go-btn-leaderboard" class="btn-cyber" style="border-color:var(--neon-cyan);">
+              🏆 VIEW LEADERBOARD
+            </button>
+            <button id="go-btn-playagain" class="btn-cyber">
+              🔄 PLAY AGAIN
+            </button>
+            <button id="go-btn-menu" class="btn-cyber">
+              🏠 MENU
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ================= 4. OVERLAYS & MODALS ================= -->
+      <!-- 3, 2, 1, RUN Countdown -->
+      <div id="overlay-countdown" class="hidden">
+        <div id="countdown-val" class="countdown-number">3</div>
+        <div class="countdown-subtext">COMPILING NEURAL PATHFINDER...</div>
+      </div>
+
+      <!-- How to Play Modal -->
+      <div id="modal-help" class="modal-overlay hidden">
+        <div class="modal-card">
+          <h2 class="modal-title">SYSTEM MANUAL // HOW TO PLAY</h2>
+          <div style="font-size:0.9rem; line-height:1.6; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.8rem;">
+            <p><strong style="color:var(--neon-cyan);">1. AUTOMATIC NAVIGATION:</strong> Your cyber avatar navigates the Pac-Man neon maze automatically using AI pathfinding to retrieve data fragments.</p>
+            <p><strong style="color:var(--neon-cyan);">2. CODE QUIZ (10 SECONDS):</strong> You control the system through the programming terminal! Answer Python (50%), HTML (25%), and CSS (25%) questions using keys <strong style="color:#fff;">[1], [2], [3], [4]</strong> or mouse clicks.</p>
+            <p><strong style="color:var(--success-green);">3. SPEED & COMBOS:</strong> Correct answers boost avatar speed and build combo multipliers (3x streak = 1.5x score, 5x = Cyber Shield, 10x = Overclock).</p>
+            <p><strong style="color:var(--warning-red);">4. HEALTH & OBSTACLES:</strong> Wrong answers or timeouts deplete 20% health (5 segments). Every 2 consecutive mistakes trigger an active firewall or drone obstacle!</p>
+            <p><strong style="color:var(--neon-magenta);">5. SURVIVAL OBJECTIVE:</strong> Survive for exactly 2 minutes (120s) and achieve the top score on the CSI TechVerse leaderboard.</p>
+          </div>
+          <div style="text-align:center; margin-top:1.5rem;">
+            <button id="btn-help-close" class="btn-cyber" style="width:140px;">CONFIRM</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Leaderboard Modal -->
+      <div id="modal-leaderboard" class="modal-overlay hidden">
+        <div class="modal-card" style="width:min(760px, 95vw);">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.8rem; flex-wrap:wrap; gap:0.5rem;">
+            <h2 class="modal-title" style="margin-bottom:0;">TECHVERSE LEADERBOARD</h2>
+            <span id="leaderboard-source-badge" class="badge-source local">LOCAL TERMINAL ARCHIVE</span>
+          </div>
+
+          <!-- Tournament Scoring Version Tabs -->
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.75rem; flex-wrap:wrap; gap:0.5rem;">
+            <div style="display:flex; gap:0.4rem;">
+              <button id="tab-lb-v2" class="btn-cyber active" style="font-size:0.75rem; padding:0.35rem 0.8rem; border-color:var(--neon-cyan); background:rgba(0,245,255,0.15); color:#fff;">
+                ⚡ ACTIVE TOURNAMENT (V2)
+              </button>
+              <button id="tab-lb-all" class="btn-cyber" style="font-size:0.75rem; padding:0.35rem 0.8rem; opacity:0.75;">
+                📜 ALL-TIME ARCHIVE (V1)
+              </button>
+            </div>
+            <button id="btn-lb-clear-local" class="btn-cyber" style="font-size:0.68rem; padding:0.28rem 0.6rem; opacity:0.65;" title="Reset local test records to clean V2 standard">
+              🧹 RESET LOCAL V2
+            </button>
+          </div>
+
+          <table class="leaderboard-table">
+            <thead>
+              <tr>
+                <th>RANK</th>
+                <th>OPERATOR</th>
+                <th>ENROLLMENT</th>
+                <th>SCORE</th>
+                <th>ACCURACY</th>
+                <th>STREAK</th>
+                <th>DATE</th>
+              </tr>
+            </thead>
+            <tbody id="leaderboard-tbody"></tbody>
+          </table>
+
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-top:1.4rem; flex-wrap:wrap; gap:0.8rem;">
+            <div style="display:flex; gap:0.6rem;">
+              <button id="btn-leaderboard-next-player" class="btn-cyber btn-primary-run" style="font-size:0.8rem; padding:0.55rem 1.1rem;">
+                ⚡ NEXT PLAYER
+              </button>
+              <button id="btn-leaderboard-setup" class="btn-cyber" style="font-size:0.75rem; padding:0.55rem 0.8rem;">
+                ⚙️ CLOUD SYNC
+              </button>
+            </div>
+            <div style="display:flex; gap:0.6rem;">
+              <button id="btn-leaderboard-refresh" class="btn-cyber" style="font-size:0.8rem; padding:0.55rem 1rem;">
+                🔄 REFRESH
+              </button>
+              <button id="btn-leaderboard-close" class="btn-cyber" style="font-size:0.8rem; padding:0.55rem 1rem;">
+                CLOSE
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= Access Restricted Modal (Returning Student) ================= -->
+      <div id="modal-access-restricted" class="modal-overlay hidden">
+        <div class="modal-card restricted-card">
+          <div class="modal-header-danger">
+            <div class="brand-badge danger-badge">
+              <span class="pulse-dot-red"></span>
+              SECURITY PROTOCOL // ONE-RUN POLICY
+            </div>
+            <h2 class="modal-title text-danger">ACCESS RESTRICTED</h2>
+          </div>
+          
+          <div class="restricted-body">
+            <div class="restricted-icon-box">
+              <span class="restricted-icon">🔒</span>
+            </div>
+            <p class="restricted-primary-msg">You have already played. Please contact the admin.</p>
+            <p class="restricted-subtext">Each student is allowed one attempt. Contact the event administrator if you need another attempt.</p>
+          </div>
+
+          <div class="restricted-actions">
+            <button id="btn-restricted-new-player" class="btn-cyber btn-primary-run">
+              ⚡ REGISTER NEW STUDENT
+            </button>
+            <button id="btn-restricted-admin-key" class="btn-cyber btn-primary-purple">
+              🔑 ENTER ADMIN KEY
+            </button>
+            <button id="btn-restricted-go-back" class="btn-cyber">
+              ← GO BACK
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ================= Admin Authorization Modal ================= -->
+      <div id="modal-admin-auth" class="modal-overlay hidden">
+        <div class="modal-card admin-auth-card">
+          <div class="brand-badge purple-badge">
+            <span class="pulse-dot-purple"></span>
+            ADMIN CONSOLE // ATTEMPT OVERRIDE
+          </div>
+          <h2 class="modal-title">ADMIN AUTHORIZATION</h2>
+          <p class="admin-auth-desc">Enter the event administrator key to grant an additional attempt for this student.</p>
+
+          <div class="target-student-badge">
+            TARGET ENROLLMENT: <span id="admin-target-enrollment" class="target-val">---</span>
+          </div>
+
+          <form id="form-admin-auth" novalidate>
+            <div class="form-group" style="text-align: left;">
+              <label for="admin-input-key" class="form-label">
+                <span class="label-prefix">[AUTH]</span> MASTER ADMIN KEY <span class="required-star">*</span>
+              </label>
+              <input
+                type="password"
+                id="admin-input-key"
+                class="input-cyber input-admin-key"
+                placeholder="Enter admin authorization key"
+                autocomplete="off"
+                required
+              />
+              <span id="admin-auth-error" class="input-error-msg"></span>
+            </div>
+
+            <div id="admin-auth-status" class="admin-auth-status-box hidden"></div>
+
+            <div class="admin-auth-actions">
+              <button type="submit" id="btn-admin-verify" class="btn-cyber btn-primary-run">
+                ⚡ VERIFY & UNLOCK
+              </button>
+              <button type="button" id="btn-admin-cancel" class="btn-cyber">
+                CANCEL
+              </button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Database & Cloud Setup Console Modal -->
+      <div id="modal-setup-guide" class="modal-overlay hidden">
+        <div class="modal-card" style="max-width: 620px; width: 92vw;">
+          <div class="brand-badge" style="border-color: var(--neon-cyan); color: var(--neon-cyan);">
+            <span class="pulse-dot-cyan"></span>
+            SUPABASE EVENT DATABASE // LIVE CONFIG
+          </div>
+          <h2 class="modal-title" style="margin-top: 0.5rem;">DATABASE & SYNC CONSOLE</h2>
+
+          <div style="font-size:0.85rem; line-height:1.5; color:var(--text-secondary); display:flex; flex-direction:column; gap:0.9rem;">
+            <!-- Connection Status Box -->
+            <div style="background: rgba(5,6,17,0.7); border: 1px solid var(--border-color); border-radius: 8px; padding: 0.8rem 1rem; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
+              <div>
+                <div style="font-size: 0.72rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 1px;">PROJECT ENDPOINT</div>
+                <div style="font-family: var(--font-mono); font-size: 0.8rem; color: var(--neon-cyan);">https://ursfmqitvpkupgasggaz.supabase.co</div>
+              </div>
+              <span id="db-conn-status-badge" class="badge-source local" style="padding: 3px 8px; font-size: 0.7rem;">LOCAL ARCHIVE</span>
+            </div>
+
+            <!-- Key Input Section -->
+            <div>
+              <label for="db-input-anon-key" style="display:block; font-size:0.75rem; color:var(--text-primary); margin-bottom:0.3rem; font-weight: 700;">
+                SUPABASE ANON PUBLIC KEY:
+              </label>
+              <div style="display:flex; gap:0.5rem; flex-wrap: wrap;">
+                <input 
+                  type="password" 
+                  id="db-input-anon-key" 
+                  class="cyber-input" 
+                  style="flex: 1; min-width: 240px; font-family: var(--font-mono); font-size: 0.78rem;" 
+                  placeholder="Paste anon key here (eyJhbGciOiJIUzI1Ni...)"
+                />
+                <button id="btn-db-save-key" class="btn-cyber btn-primary-run" style="font-size: 0.8rem; padding: 0.5rem 1rem;">
+                  ⚡ CONNECT
+                </button>
+              </div>
+            </div>
+
+            <!-- Live Diagnostic Message Box -->
+            <div id="db-conn-feedback" style="min-height: 22px; font-size: 0.78rem; font-family: var(--font-mono); transition: all 0.2s ease;"></div>
+
+            <!-- Fast Action Buttons -->
+            <div style="display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 0.2rem;">
+              <button id="btn-db-copy-schema" class="btn-cyber" style="font-size: 0.75rem; padding: 0.4rem 0.8rem;">
+                📋 COPY SQL SCHEMA
+              </button>
+              <a href="https://supabase.com/dashboard/project/ursfmqitvpkupgasggaz/sql/new" target="_blank" rel="noopener noreferrer" class="btn-cyber" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; text-decoration: none; display: inline-flex; align-items: center;">
+                ↗ OPEN SQL EDITOR
+              </a>
+              <a href="https://supabase.com/dashboard/project/ursfmqitvpkupgasggaz/settings/api" target="_blank" rel="noopener noreferrer" class="btn-cyber" style="font-size: 0.75rem; padding: 0.4rem 0.8rem; text-decoration: none; display: inline-flex; align-items: center; color: var(--neon-cyan);">
+                🔑 GET ANON KEY
+              </a>
+            </div>
+
+            <!-- Setup Steps Accordion / Details -->
+            <div style="background: rgba(255,255,255,0.03); border-radius: 6px; padding: 0.7rem; font-size: 0.78rem; border-left: 3px solid var(--neon-cyan);">
+              <strong style="color: var(--neon-cyan);">Quick Cloud Setup in 60 Seconds:</strong>
+              <ol style="margin-left: 1.2rem; margin-top: 0.4rem; display: flex; flex-direction: column; gap: 0.3rem;">
+                <li>Click <strong>GET ANON KEY</strong> above and copy the <code>anon</code> / <code>public</code> key.</li>
+                <li>Paste it in the box above and click <strong>CONNECT</strong>. It connects live across stall laptops!</li>
+                <li>If tables aren't created yet, click <strong>COPY SQL SCHEMA</strong>, click <strong>OPEN SQL EDITOR</strong>, paste and hit <strong>Run</strong> (▶).</li>
+              </ol>
+            </div>
+          </div>
+
+          <div style="text-align:center; margin-top:1.2rem;">
+            <button id="btn-guide-close" class="btn-cyber" style="width:140px;">CLOSE CONSOLE</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Pause Modal -->
+      <div id="modal-pause" class="modal-overlay hidden">
+        <div class="modal-card" style="text-align:center; width:340px;">
+          <h2 class="modal-title">GAME PAUSED</h2>
+          <div style="display:flex; flex-direction:column; gap:0.8rem; margin-top:1.2rem;">
+            <button id="btn-pause-resume" class="btn-cyber btn-primary-run" style="font-size:0.95rem;">
+              ▶ RESUME RUN
+            </button>
+            <button id="btn-pause-restart" class="btn-cyber">
+              🔄 RESTART RUN
+            </button>
+            <button id="btn-pause-menu" class="btn-cyber">
+              🏠 MAIN MENU
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
