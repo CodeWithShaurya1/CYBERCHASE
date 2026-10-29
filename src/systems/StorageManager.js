@@ -33,7 +33,7 @@ export class StorageManager {
     this.supabaseAnonKey = (
       import.meta.env?.VITE_SUPABASE_ANON_KEY ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('cyberchase_supabase_anon_key') : '') ||
-      ''
+      'sb_publishable_53cvkUfK3Fb3V9ZJ8Qtjzw_s-Zd88ic'
     ).trim();
 
     this.supabase = null;
