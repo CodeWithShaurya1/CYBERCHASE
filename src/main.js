@@ -62,16 +62,27 @@ class CyberchaseApp {
     const drops = Array(columns).fill(1);
 
     const draw = () => {
-      ctx.fillStyle = 'rgba(5, 6, 17, 0.08)';
+      // Deep dark fade trail for high contrast
+      ctx.fillStyle = 'rgba(5, 6, 17, 0.10)';
       ctx.fillRect(0, 0, canvas.width, canvas.height);
 
-      ctx.fillStyle = '#00f5ff';
-      ctx.font = `${fontSize}px 'JetBrains Mono', monospace`;
+      ctx.font = `bold ${fontSize}px 'JetBrains Mono', monospace`;
 
       for (let i = 0; i < drops.length; i++) {
         const text = chars[Math.floor(Math.random() * chars.length)];
         const x = i * fontSize;
         const y = drops[i] * fontSize;
+
+        // Bright neon glow for high visibility on monitors
+        if (Math.random() > 0.88) {
+          ctx.fillStyle = '#ffffff';
+          ctx.shadowColor = '#00f5ff';
+          ctx.shadowBlur = 6;
+        } else {
+          ctx.fillStyle = '#00f5ff';
+          ctx.shadowColor = '#00f5ff';
+          ctx.shadowBlur = 3;
+        }
 
         ctx.fillText(text, x, y);
 

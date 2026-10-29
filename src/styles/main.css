@@ -43,7 +43,7 @@ body, html {
   width: 100vw;
   height: 100vh;
   z-index: 0;
-  opacity: 0.18;
+  opacity: 0.52;
   pointer-events: none;
 }
 
@@ -54,8 +54,8 @@ body, html {
   width: 100vw;
   height: 100vh;
   background-image: 
-    linear-gradient(to right, rgba(0, 245, 255, 0.04) 1px, transparent 1px),
-    linear-gradient(to bottom, rgba(157, 78, 221, 0.04) 1px, transparent 1px);
+    linear-gradient(to right, rgba(0, 245, 255, 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgba(157, 78, 221, 0.05) 1px, transparent 1px);
   background-size: 40px 40px;
   pointer-events: none;
   z-index: 1;
@@ -70,12 +70,12 @@ body, html {
   height: 100vh;
   background: linear-gradient(
     rgba(18, 16, 16, 0) 50%, 
-    rgba(0, 0, 0, 0.3) 50%
+    rgba(0, 0, 0, 0.25) 50%
   );
   background-size: 100% 4px;
   z-index: 999;
   pointer-events: none;
-  opacity: 0.65;
+  opacity: 0.35;
 }
 
 .crt-scanlines.hidden {
