@@ -116,18 +116,22 @@ class CyberchaseApp {
         }
       },
       onObstacleTriggered: () => {
-        audioManager.playObstacleSpawn();
-        if (this.gameScene) {
-          this.gameScene.triggerObstacleSpawn();
-          const newEnemy = this.gameScene.spawnAdditionalEnemy();
-          if (newEnemy && this.gameScene.particleEffects && this.gameScene.player) {
-            this.gameScene.particleEffects.spawnScoreFloater(
-              this.gameScene.player.x,
-              this.gameScene.player.y - 25,
-              `⚠️ +1 ENEMY (${this.gameScene.enemies.length} TOTAL)`,
-              '#ff0055'
-            );
+        try {
+          audioManager.playObstacleSpawn();
+          if (this.gameScene) {
+            this.gameScene.triggerObstacleSpawn();
+            const newEnemy = this.gameScene.spawnAdditionalEnemy();
+            if (newEnemy && this.gameScene.particleEffects && this.gameScene.player) {
+              this.gameScene.particleEffects.spawnScoreFloater(
+                this.gameScene.player.x,
+                this.gameScene.player.y - 25,
+                `⚠️ +1 ENEMY (${this.gameScene.enemies.length} TOTAL)`,
+                '#ff0055'
+              );
+            }
           }
+        } catch (err) {
+          console.warn('Error handling obstacle/enemy spawn:', err);
         }
       },
       onShieldChanged: (hasShield) => {
@@ -335,27 +339,33 @@ class CyberchaseApp {
 
     const qId = result.question ? result.question.id : null;
 
-    if (result.isCorrect) {
-      this.scoreManager.awardCorrectAnswer(qId);
-      if (this.gameScene && this.gameScene.player) {
-        this.gameScene.player.triggerBoostEffect();
-      }
-    } else {
-      audioManager.playWrong();
-      // Apply 20% health reduction on mistake (wrong answer or timeout)
-      if (result.isTimeout) {
-        this.scoreManager.handleTimeoutWithDamage(qId);
+    try {
+      if (result.isCorrect) {
+        this.scoreManager.awardCorrectAnswer(qId);
+        if (this.gameScene && this.gameScene.player) {
+          this.gameScene.player.triggerBoostEffect();
+        }
       } else {
-        this.scoreManager.handleMistake(false, qId, true);
-      }
+        audioManager.playWrong();
+        // Apply 20% health reduction on mistake (wrong answer or timeout)
+        if (result.isTimeout) {
+          this.scoreManager.handleTimeoutWithDamage(qId);
+        } else {
+          this.scoreManager.handleMistake(false, qId, true);
+        }
 
-      if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
-        this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+        if (this.gameScene && this.gameScene.particleEffects && this.gameScene.player) {
+          this.gameScene.particleEffects.emitDamageGlitch(this.gameScene.player.x, this.gameScene.player.y);
+        }
       }
+    } catch (err) {
+      console.warn('Error during score/health processing:', err);
     }
 
     if (this.hud) {
-      this.hud.updateStreak(this.scoreManager.streak);
+      try {
+        this.hud.updateStreak(this.scoreManager.streak);
+      } catch (_) {}
     }
 
     // If health reached 0, end game immediately
@@ -367,13 +377,15 @@ class CyberchaseApp {
       return;
     }
 
-    // Trigger full-panel animated countdown (3 -> 2 -> 1)
+    // Trigger full-panel animated countdown (3 -> 2 -> 1) and advance to next question
     if (this.isGameActive && this.questionPanel) {
       this.questionPanel.startCountdown(result, () => {
         if (this.isGameActive && !this.isPaused && this.scoreManager.health > 0) {
           this.questionEngine.nextQuestion();
         }
       });
+    } else if (this.isGameActive && !this.isPaused && this.scoreManager.health > 0) {
+      this.questionEngine.nextQuestion();
     }
   }
 

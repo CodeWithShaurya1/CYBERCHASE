@@ -231,13 +231,27 @@ export class QuestionPanel {
 
     this.countdownOverlay.classList.remove('hidden', 'warp-out');
 
+    // Safety watchdog: ensure callback is guaranteed to fire within 4.5s
+    const watchdogId = setTimeout(() => {
+      if (this.isCountdownActive && this.countdownCompleteCallback) {
+        console.warn('Countdown safety watchdog triggered; advancing question.');
+        const cb = this.countdownCompleteCallback;
+        this.cancelCountdown();
+        cb();
+      }
+    }, 4500);
+
     // Circumference of 64px radius SVG circle: 2 * PI * 64 ≈ 402.12
     const circumference = 402.12;
 
     const executeStep = () => {
-      if (!this.isCountdownActive) return;
+      if (!this.isCountdownActive) {
+        clearTimeout(watchdogId);
+        return;
+      }
 
-      if (this.currentCountdownStep > 0) {
+      try {
+        if (this.currentCountdownStep > 0) {
         const stepNum = this.currentCountdownStep;
 
         // Update Digit with re-triggered animation
@@ -285,6 +299,7 @@ export class QuestionPanel {
         this.countdownTimer = setTimeout(() => {
           this.isCountdownActive = false;
           this.hideCountdown();
+          clearTimeout(watchdogId);
           if (this.countdownCompleteCallback) {
             const cb = this.countdownCompleteCallback;
             this.countdownCompleteCallback = null;
@@ -292,10 +307,21 @@ export class QuestionPanel {
           }
         }, 180);
       }
-    };
+    } catch (err) {
+      console.warn('Countdown execution error, advancing question immediately:', err);
+      clearTimeout(watchdogId);
+      this.isCountdownActive = false;
+      this.hideCountdown();
+      if (this.countdownCompleteCallback) {
+        const cb = this.countdownCompleteCallback;
+        this.countdownCompleteCallback = null;
+        cb();
+      }
+    }
+  };
 
-    executeStep();
-  }
+  executeStep();
+}
 
   cancelCountdown() {
     this.isCountdownActive = false;

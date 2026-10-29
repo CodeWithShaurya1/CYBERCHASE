@@ -206,11 +206,17 @@ export class GameScene extends Phaser.Scene {
     const enemy = new Enemy(this, this.maze, chosen.r, chosen.c, enemyId, chosenRole);
     this.enemies.push(enemy);
 
-    const pos = this.maze.getTileCenter(chosen.r, chosen.c);
-    if (this.particleEffects) {
-      this.particleEffects.emitObstacleGlitch(pos.x, pos.y);
-      this.particleEffects.spawnScoreFloater(pos.x, pos.y - 10, '⚠️ +1 ENEMY', '#ff0055');
-    }
+    try {
+      const pos = this.maze.getTileCenter(chosen.r, chosen.c);
+      if (this.particleEffects) {
+        if (typeof this.particleEffects.emitObstacleGlitch === 'function') {
+          this.particleEffects.emitObstacleGlitch(pos.x, pos.y);
+        }
+        if (typeof this.particleEffects.spawnScoreFloater === 'function') {
+          this.particleEffects.spawnScoreFloater(pos.x, pos.y - 10, '⚠️ +1 ENEMY', '#ff0055');
+        }
+      }
+    } catch (_) {}
 
     return enemy;
   }
