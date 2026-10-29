@@ -25,14 +25,14 @@ export const STARTER_MOCK_ENROLLMENTS = new Set(
 export class StorageManager {
   constructor() {
     this.supabaseUrl = (
-      import.meta.env?.VITE_SUPABASE_URL ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('cyberchase_supabase_url') : '') ||
+      import.meta.env?.VITE_SUPABASE_URL ||
       'https://ursfmqitvpkupgasggaz.supabase.co'
     ).trim();
 
     this.supabaseAnonKey = (
-      import.meta.env?.VITE_SUPABASE_ANON_KEY ||
       (typeof localStorage !== 'undefined' ? localStorage.getItem('cyberchase_supabase_anon_key') : '') ||
+      import.meta.env?.VITE_SUPABASE_ANON_KEY ||
       'sb_publishable_53cvkUfK3Fb3V9ZJ8Qtjzw_s-Zd88ic'
     ).trim();
 
@@ -46,6 +46,13 @@ export class StorageManager {
     this.memoryPlayedMap = {};
     this.memoryAuthSet = new Set();
     this.ensureLocalInitialData();
+
+    // Auto-sync any pending local scores if cloud is operational
+    if (this.isCloudConfigured) {
+      setTimeout(() => {
+        this.syncLocalScoresToCloud().catch(() => {});
+      }, 500);
+    }
   }
 
   // Initialize or re-initialize the Supabase client dynamically
@@ -477,6 +484,72 @@ export class StorageManager {
     return { success: false, error: 'Invalid admin key' };
   }
 
+  // Sync any non-mock local scores to the cloud database
+  async syncLocalScoresToCloud() {
+    if (!this.isCloudConfigured || !this.supabase) return { synced: 0 };
+
+    try {
+      if (typeof localStorage === 'undefined') return { synced: 0 };
+      const localData = localStorage.getItem(LOCAL_STORAGE_KEY);
+      if (!localData) return { synced: 0 };
+
+      const localList = JSON.parse(localData);
+      if (!Array.isArray(localList)) return { synced: 0 };
+
+      // Filter only real student player scores (excluding starter mocks)
+      const realScores = localList.filter(row =>
+        row &&
+        !row.isStarterMock &&
+        !STARTER_MOCK_ENROLLMENTS.has(this.normalizeEnrollment(row.enrollment))
+      );
+
+      if (realScores.length === 0) return { synced: 0 };
+
+      // Query existing enrollments in cloud to avoid duplicate insertions
+      const { data: existingRows } = await this.supabase
+        .from('cyberchase_leaderboard')
+        .select('normalized_enrollment, enrollment, score');
+
+      const existingSet = new Set(
+        (existingRows || []).map(r => `${this.normalizeEnrollment(r.enrollment || r.normalized_enrollment)}_${r.score}`)
+      );
+
+      let syncedCount = 0;
+      for (const item of realScores) {
+        const norm = this.normalizeEnrollment(item.enrollment);
+        const key = `${norm}_${item.score}`;
+        if (!existingSet.has(key)) {
+          const insertPayload = {
+            name: this.sanitizeName(item.name),
+            enrollment: this.sanitizeEnrollment(item.enrollment),
+            normalized_enrollment: norm,
+            score: Math.max(0, Math.floor(item.score || 0)),
+            accuracy: Math.max(0, Math.min(100, Math.floor(item.accuracy || 0))),
+            correct_answers: Math.max(0, Math.floor(item.correct_answers || 0)),
+            wrong_answers: Math.max(0, Math.floor(item.wrong_answers || 0)),
+            streak: Math.max(0, Math.floor(item.streak || 0)),
+            fragments: Math.max(0, Math.floor(item.fragments || 0)),
+            scoring_version: item.scoring_version || 'v2'
+          };
+
+          const { error: insErr } = await this.supabase
+            .from('cyberchase_leaderboard')
+            .insert([insertPayload]);
+
+          if (!insErr) {
+            syncedCount++;
+            existingSet.add(key);
+          }
+        }
+      }
+
+      return { synced: syncedCount };
+    } catch (e) {
+      console.warn('Local-to-cloud sync warning:', e);
+      return { synced: 0, error: e.message };
+    }
+  }
+
   // Fetch top 10 leaderboard entries sorted by: highest score, accuracy desc, created_at asc
   async getLeaderboard(filterVersion = 'v2') {
     // Try cloud first if configured
@@ -496,24 +569,36 @@ export class StorageManager {
           .order('created_at', { ascending: true })
           .limit(10);
 
-        if (!error && Array.isArray(data) && data.length > 0) {
+        if (!error && Array.isArray(data)) {
+          const cloudEntries = data.map((row, idx) => ({
+            rank: idx + 1,
+            name: row.name,
+            enrollment: row.enrollment || 'N/A',
+            score: row.score,
+            accuracy: row.accuracy,
+            correct_answers: row.correct_answers || 0,
+            wrong_answers: row.wrong_answers || 0,
+            streak: row.streak || 0,
+            fragments: row.fragments || 0,
+            attempt: row.attempt_number || 1,
+            scoring_version: row.scoring_version || 'v2',
+            date: row.created_at ? new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live',
+            source: 'cloud'
+          }));
+
+          // If fewer than 10 rows from cloud, fill remaining slots with baseline champions
+          let entries = cloudEntries;
+          if (entries.length < 10) {
+            const existingEnrollments = new Set(entries.map(e => this.normalizeEnrollment(e.enrollment)));
+            const defaults = DEFAULT_LEADERBOARD
+              .filter(d => !existingEnrollments.has(this.normalizeEnrollment(d.enrollment)))
+              .map(d => ({ ...d, source: 'cloud' }));
+            entries = [...entries, ...defaults].slice(0, 10).map((it, idx) => ({ ...it, rank: idx + 1 }));
+          }
+
           return {
             source: 'cloud',
-            entries: data.map((row, idx) => ({
-              rank: idx + 1,
-              name: row.name,
-              enrollment: row.enrollment || 'N/A',
-              score: row.score,
-              accuracy: row.accuracy,
-              correct_answers: row.correct_answers || 0,
-              wrong_answers: row.wrong_answers || 0,
-              streak: row.streak || 0,
-              fragments: row.fragments || 0,
-              attempt: row.attempt_number || 1,
-              scoring_version: row.scoring_version || 'v1',
-              date: row.created_at ? new Date(row.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Live',
-              source: 'cloud'
-            }))
+            entries
           };
         }
       } catch (err) {

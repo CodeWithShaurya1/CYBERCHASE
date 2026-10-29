@@ -256,9 +256,13 @@ export class Leaderboard {
           localStorage.setItem('cyberchase_supabase_anon_key', key);
         }
 
+        // Auto-sync any local student scores to Supabase
+        const syncRes = await storageManager.syncLocalScoresToCloud();
+
         audioManager.playCollect();
         if (this.dbFeedback) {
-          this.dbFeedback.textContent = `✓ ${testRes.message}`;
+          const syncNote = syncRes && syncRes.synced > 0 ? ` Synced ${syncRes.synced} local score(s) to cloud.` : '';
+          this.dbFeedback.textContent = `✓ ${testRes.message}${syncNote}`;
           this.dbFeedback.style.color = '#39ff88';
         }
 
