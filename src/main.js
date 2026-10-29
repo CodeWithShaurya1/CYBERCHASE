@@ -119,6 +119,15 @@ class CyberchaseApp {
         audioManager.playObstacleSpawn();
         if (this.gameScene) {
           this.gameScene.triggerObstacleSpawn();
+          const newEnemy = this.gameScene.spawnAdditionalEnemy();
+          if (newEnemy && this.gameScene.particleEffects && this.gameScene.player) {
+            this.gameScene.particleEffects.spawnScoreFloater(
+              this.gameScene.player.x,
+              this.gameScene.player.y - 25,
+              `⚠️ +1 ENEMY (${this.gameScene.enemies.length} TOTAL)`,
+              '#ff0055'
+            );
+          }
         }
       },
       onShieldChanged: (hasShield) => {

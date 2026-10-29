@@ -174,9 +174,49 @@ export class GameScene extends Phaser.Scene {
     });
   }
 
+  spawnAdditionalEnemy() {
+    if (!this.maze || !this.player) return null;
+
+    const occupied = [{ r: this.player.r, c: this.player.c }];
+    this.enemies.forEach(e => occupied.push({ r: e.r, c: e.c }));
+
+    const validTiles = [];
+    for (let r = 1; r < this.maze.rows - 1; r++) {
+      for (let c = 1; c < this.maze.cols - 1; c++) {
+        if (this.maze.isWalkable(r, c)) {
+          const distToPlayer = Math.hypot(r - this.player.r, c - this.player.c);
+          const notOccupied = !occupied.some(o => o.r === r && o.c === c);
+          if (distToPlayer >= 4 && notOccupied) {
+            validTiles.push({ r, c, dist: distToPlayer });
+          }
+        }
+      }
+    }
+
+    if (validTiles.length === 0) return null;
+
+    // Pick one of the farthest walkable tiles from player
+    validTiles.sort((a, b) => b.dist - a.dist);
+    const chosen = validTiles[Math.floor(Math.random() * Math.min(5, validTiles.length))];
+
+    const enemyId = this.enemies.length + 1;
+    const roles = ['hunter', 'interceptor', 'flanker'];
+    const chosenRole = roles[(enemyId - 1) % roles.length];
+
+    const enemy = new Enemy(this, this.maze, chosen.r, chosen.c, enemyId, chosenRole);
+    this.enemies.push(enemy);
+
+    const pos = this.maze.getTileCenter(chosen.r, chosen.c);
+    if (this.particleEffects) {
+      this.particleEffects.emitObstacleGlitch(pos.x, pos.y);
+      this.particleEffects.spawnScoreFloater(pos.x, pos.y - 10, '⚠️ +1 ENEMY', '#ff0055');
+    }
+
+    return enemy;
+  }
+
   addSecondEnemy() {
-    // 3 enemies are already active from start; maintain safe no-op
-    if (this.enemies.length >= 3) return;
+    return this.spawnAdditionalEnemy();
   }
 
   startRun() {
