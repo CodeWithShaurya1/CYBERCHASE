@@ -157,6 +157,15 @@ body, html {
   animation: pulse-glow 1.5s infinite;
 }
 
+.brand-chip-icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: inline-block;
+  vertical-align: middle;
+  filter: drop-shadow(0 0 6px rgba(0, 245, 255, 0.55));
+}
+
 .menu-hero {
   margin-bottom: 0.8rem;
 }
