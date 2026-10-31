@@ -882,10 +882,12 @@ export class StorageManager {
         localStorage.setItem(LOCAL_STORAGE_KEY, JSON.stringify(DEFAULT_LEADERBOARD));
         localStorage.removeItem('cyberchase_played_enrollments');
         localStorage.removeItem('cyberchase_local_authorizations');
+        localStorage.removeItem(SUBMITTED_SESSIONS_KEY);
       }
     } catch (_) { }
     this.memoryPlayedMap = {};
     this.memoryAuthSet.clear();
+    this.submittedSessions.clear();
     return DEFAULT_LEADERBOARD;
   }
 
